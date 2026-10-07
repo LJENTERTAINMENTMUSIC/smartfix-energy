@@ -257,8 +257,9 @@ export default function Admin({ onSignOut }: { onSignOut?: () => void }) {
   ];
 
   return (
-    <div className="relative min-h-screen cinematic-bg pt-6 pb-16">
-      <div className="max-w-7xl mx-auto px-4 md:px-6">
+    <div className="relative min-h-screen pt-6 pb-16">
+      <div className="cinematic-bg" aria-hidden="true" />
+      <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-6">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8">
           <div>

@@ -142,43 +142,55 @@ export const catalog = {
 
   async addProduct(p: Omit<Product, "id">) {
     if (!supabase) return;
-    await supabase.from("products").insert([p]);
+    const { data } = await supabase.from("products").insert([p]).select();
+    if (data && data.length > 0) {
+      commit({ ...state, products: [data[0] as Product, ...state.products.filter(x => x.id !== data[0].id)] });
+    }
   },
 
   async updateProduct(id: string, patch: Partial<Product>) {
     if (!supabase) return;
+    commit({ ...state, products: state.products.map(p => p.id === id ? { ...p, ...patch } : p) });
     await supabase.from("products").update(patch).eq("id", id);
   },
 
   async deleteProduct(id: string) {
     if (!supabase) return;
+    commit({ ...state, products: state.products.filter(p => p.id !== id) });
     await supabase.from("products").delete().eq("id", id);
   },
 
   async togglePromo(id: string) {
     const p = state.products.find(x => x.id === id);
     if (!p || !supabase) return;
+    commit({ ...state, products: state.products.map(x => x.id === id ? { ...x, promo: !x.promo } : x) });
     await supabase.from("products").update({ promo: !p.promo }).eq("id", id);
   },
 
   async toggleFeatured(id: string) {
     const p = state.products.find(x => x.id === id);
     if (!p || !supabase) return;
+    commit({ ...state, products: state.products.map(x => x.id === id ? { ...x, featured: !x.featured } : x) });
     await supabase.from("products").update({ featured: !p.featured }).eq("id", id);
   },
 
   async addLead(l: Omit<Lead, "id">) {
     if (!supabase) return;
-    await supabase.from("leads").insert([l]);
+    const { data } = await supabase.from("leads").insert([l]).select();
+    if (data && data.length > 0) {
+      commit({ ...state, leads: [data[0] as Lead, ...state.leads.filter(x => x.id !== data[0].id)] });
+    }
   },
 
   async updateLead(id: string, patch: Partial<Lead>) {
     if (!supabase) return;
+    commit({ ...state, leads: state.leads.map(l => l.id === id ? { ...l, ...patch } : l) });
     await supabase.from("leads").update(patch).eq("id", id);
   },
 
   async deleteLead(id: string) {
     if (!supabase) return;
+    commit({ ...state, leads: state.leads.filter(l => l.id !== id) });
     await supabase.from("leads").delete().eq("id", id);
   },
 
