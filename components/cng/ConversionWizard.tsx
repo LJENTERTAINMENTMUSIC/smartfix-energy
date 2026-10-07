@@ -294,11 +294,11 @@ export default function ConversionWizard() {
                   <select
                     value={data.state}
                     onChange={(e) => update("state", e.target.value)}
-                    className="w-full px-3 py-2.5 rounded-lg bg-[var(--muted)] border border-[var(--border)] text-sm text-[var(--electric)] focus:border-[var(--energy-green)] outline-none"
+                    className="w-full px-3 py-2.5 rounded-lg bg-[#141417] text-[#f5f5f7] border border-[var(--border)] text-sm [color-scheme:dark] focus:border-[var(--energy-green)] outline-none cursor-pointer"
                   >
-                    <option value="">Select state</option>
+                    <option value="" className="bg-[#141417] text-[#f5f5f7]">Select state</option>
                     {nigerianStates.map((s) => (
-                      <option key={s} value={s}>{s}</option>
+                      <option key={s} value={s} className="bg-[#141417] text-[#f5f5f7]">{s}</option>
                     ))}
                   </select>
                 </div>
@@ -308,7 +308,7 @@ export default function ConversionWizard() {
                     value={data.city}
                     onChange={(e) => update("city", e.target.value)}
                     placeholder="e.g. Ikeja"
-                    className="w-full px-3 py-2.5 rounded-lg bg-[var(--muted)] border border-[var(--border)] text-sm text-[var(--electric)] placeholder:text-[var(--muted-foreground)] focus:border-[var(--energy-green)] outline-none"
+                    className="w-full px-3 py-2.5 rounded-lg bg-[#141417] text-[#f5f5f7] border border-[var(--border)] text-sm placeholder:text-[var(--muted-foreground)] focus:border-[var(--energy-green)] outline-none [color-scheme:dark]"
                   />
                 </div>
               </div>

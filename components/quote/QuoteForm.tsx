@@ -115,20 +115,21 @@ export default function QuoteForm() {
   }
 
   return (
-    <div className="glass-card p-6 md:p-8">
+    <div className="glass-card p-4 sm:p-6 md:p-8 w-full max-w-full overflow-hidden">
       {/* Service selection */}
       <div>
         <h3 className="font-display font-semibold text-lg text-[var(--electric)] mb-4">
           What do you need?
         </h3>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
           {serviceOptions.map((service) => (
             <button
               key={service}
+              type="button"
               onClick={() => toggle(service)}
-              className={`flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm border text-left transition-all ${
+              className={`flex items-center gap-2 px-2.5 sm:px-3 py-2.5 rounded-lg text-xs sm:text-sm border text-left transition-all ${
                 selected.includes(service)
-                  ? "bg-[var(--energy-green)] text-[var(--obsidian)] border-[var(--energy-green)]"
+                  ? "bg-[var(--energy-green)] text-[var(--obsidian)] border-[var(--energy-green)] font-semibold"
                   : "glass-panel text-[var(--muted-foreground)] border-[var(--border)] hover:text-[var(--electric)]"
               }`}
             >
@@ -137,7 +138,7 @@ export default function QuoteForm() {
               }`}>
                 {selected.includes(service) && <Check className="w-3 h-3" />}
               </div>
-              {service}
+              <span className="truncate">{service}</span>
             </button>
           ))}
         </div>
@@ -151,21 +152,21 @@ export default function QuoteForm() {
           onChange={(e) => setDetails(e.target.value)}
           rows={3}
           placeholder="Describe your energy needs, current setup, challenges..."
-          className="w-full px-3 py-2.5 rounded-lg bg-[var(--muted)] border border-[var(--border)] text-sm text-[var(--electric)] placeholder:text-[var(--muted-foreground)] focus:border-[var(--energy-green)] outline-none resize-none"
+          className="w-full px-3 py-2.5 rounded-lg bg-[#141417] text-[#f5f5f7] border border-[var(--border)] text-sm placeholder:text-[var(--muted-foreground)] focus:border-[var(--energy-green)] outline-none resize-none [color-scheme:dark]"
         />
       </div>
 
-      {/* Budget, Timeline, Location */}
-      <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+      {/* Budget, Timeline, State, City */}
+      <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         <div>
           <label className="text-xs text-[var(--muted-foreground)] mb-1.5 block">Budget range</label>
           <select
             value={budget}
             onChange={(e) => setBudget(e.target.value)}
-            className="w-full px-3 py-2.5 rounded-lg bg-[var(--muted)] border border-[var(--border)] text-sm text-[var(--electric)] focus:border-[var(--energy-green)] outline-none"
+            className="w-full px-3 py-3 rounded-lg bg-[#141417] text-[#f5f5f7] border border-[var(--border)] text-sm [color-scheme:dark] focus:border-[var(--energy-green)] outline-none cursor-pointer"
           >
-            <option value="">Select budget</option>
-            {budgetRanges.map((b) => <option key={b} value={b}>{b}</option>)}
+            <option value="" className="bg-[#141417] text-[#f5f5f7]">Select budget</option>
+            {budgetRanges.map((b) => <option key={b} value={b} className="bg-[#141417] text-[#f5f5f7]">{b}</option>)}
           </select>
         </div>
         <div>
@@ -173,10 +174,10 @@ export default function QuoteForm() {
           <select
             value={timeline}
             onChange={(e) => setTimeline(e.target.value)}
-            className="w-full px-3 py-2.5 rounded-lg bg-[var(--muted)] border border-[var(--border)] text-sm text-[var(--electric)] focus:border-[var(--energy-green)] outline-none"
+            className="w-full px-3 py-3 rounded-lg bg-[#141417] text-[#f5f5f7] border border-[var(--border)] text-sm [color-scheme:dark] focus:border-[var(--energy-green)] outline-none cursor-pointer"
           >
-            <option value="">Select timeline</option>
-            {timelines.map((t) => <option key={t} value={t}>{t}</option>)}
+            <option value="" className="bg-[#141417] text-[#f5f5f7]">Select timeline</option>
+            {timelines.map((t) => <option key={t} value={t} className="bg-[#141417] text-[#f5f5f7]">{t}</option>)}
           </select>
         </div>
         <div>
@@ -184,21 +185,21 @@ export default function QuoteForm() {
           <select
             value={state}
             onChange={(e) => setState(e.target.value)}
-            className="w-full px-3 py-2.5 rounded-lg bg-[var(--muted)] border border-[var(--border)] text-sm text-[var(--electric)] focus:border-[var(--energy-green)] outline-none"
+            className="w-full px-3 py-3 rounded-lg bg-[#141417] text-[#f5f5f7] border border-[var(--border)] text-sm [color-scheme:dark] focus:border-[var(--energy-green)] outline-none cursor-pointer"
           >
-            <option value="">Select state</option>
-            {nigerianStates.map((s) => <option key={s} value={s}>{s}</option>)}
+            <option value="" className="bg-[#141417] text-[#f5f5f7]">Select state</option>
+            {nigerianStates.map((s) => <option key={s} value={s} className="bg-[#141417] text-[#f5f5f7]">{s}</option>)}
           </select>
         </div>
-      </div>
-      <div className="mt-3">
-        <label className="text-xs text-[var(--muted-foreground)] mb-1.5 block">City</label>
-        <input
-          value={city}
-          onChange={(e) => setCity(e.target.value)}
-          placeholder="e.g. Ikeja"
-          className="w-full px-3 py-2.5 rounded-lg bg-[var(--muted)] border border-[var(--border)] text-sm text-[var(--electric)] placeholder:text-[var(--muted-foreground)] focus:border-[var(--energy-green)] outline-none"
-        />
+        <div>
+          <label className="text-xs text-[var(--muted-foreground)] mb-1.5 block">City</label>
+          <input
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
+            placeholder="e.g. Ikeja, Lekki"
+            className="w-full px-3 py-3 rounded-lg bg-[#141417] text-[#f5f5f7] border border-[var(--border)] text-sm placeholder:text-[var(--muted-foreground)] focus:border-[var(--energy-green)] outline-none [color-scheme:dark]"
+          />
+        </div>
       </div>
 
       {/* Upload placeholder */}
@@ -221,7 +222,7 @@ export default function QuoteForm() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Your name"
-              className="w-full px-3 py-2.5 rounded-lg bg-[var(--muted)] border border-[var(--border)] text-sm text-[var(--electric)] placeholder:text-[var(--muted-foreground)] focus:border-[var(--energy-green)] outline-none"
+              className="w-full px-3 py-2.5 rounded-lg bg-[#141417] text-[#f5f5f7] border border-[var(--border)] text-sm placeholder:text-[var(--muted-foreground)] focus:border-[var(--energy-green)] outline-none [color-scheme:dark]"
             />
           </div>
           <div>
@@ -230,7 +231,7 @@ export default function QuoteForm() {
               value={company}
               onChange={(e) => setCompany(e.target.value)}
               placeholder="Company name"
-              className="w-full px-3 py-2.5 rounded-lg bg-[var(--muted)] border border-[var(--border)] text-sm text-[var(--electric)] placeholder:text-[var(--muted-foreground)] focus:border-[var(--energy-green)] outline-none"
+              className="w-full px-3 py-2.5 rounded-lg bg-[#141417] text-[#f5f5f7] border border-[var(--border)] text-sm placeholder:text-[var(--muted-foreground)] focus:border-[var(--energy-green)] outline-none [color-scheme:dark]"
             />
           </div>
           <div>
@@ -239,7 +240,7 @@ export default function QuoteForm() {
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="e.g. 0803 000 0000"
-              className="w-full px-3 py-2.5 rounded-lg bg-[var(--muted)] border border-[var(--border)] text-sm text-[var(--electric)] placeholder:text-[var(--muted-foreground)] focus:border-[var(--energy-green)] outline-none"
+              className="w-full px-3 py-2.5 rounded-lg bg-[#141417] text-[#f5f5f7] border border-[var(--border)] text-sm placeholder:text-[var(--muted-foreground)] focus:border-[var(--energy-green)] outline-none [color-scheme:dark]"
             />
           </div>
           <div>
@@ -248,7 +249,7 @@ export default function QuoteForm() {
               value={whatsapp}
               onChange={(e) => setWhatsapp(e.target.value)}
               placeholder="WhatsApp number"
-              className="w-full px-3 py-2.5 rounded-lg bg-[var(--muted)] border border-[var(--border)] text-sm text-[var(--electric)] placeholder:text-[var(--muted-foreground)] focus:border-[var(--energy-green)] outline-none"
+              className="w-full px-3 py-2.5 rounded-lg bg-[#141417] text-[#f5f5f7] border border-[var(--border)] text-sm placeholder:text-[var(--muted-foreground)] focus:border-[var(--energy-green)] outline-none [color-scheme:dark]"
             />
           </div>
           <div className="md:col-span-2">
@@ -258,7 +259,7 @@ export default function QuoteForm() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@email.com"
-              className="w-full px-3 py-2.5 rounded-lg bg-[var(--muted)] border border-[var(--border)] text-sm text-[var(--electric)] placeholder:text-[var(--muted-foreground)] focus:border-[var(--energy-green)] outline-none"
+              className="w-full px-3 py-2.5 rounded-lg bg-[#141417] text-[#f5f5f7] border border-[var(--border)] text-sm placeholder:text-[var(--muted-foreground)] focus:border-[var(--energy-green)] outline-none [color-scheme:dark]"
             />
           </div>
         </div>
