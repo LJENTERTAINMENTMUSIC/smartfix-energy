@@ -1710,6 +1710,8 @@ export default function CustomerPortal() {
         profile={profile}
         projects={projects}
         orders={orders}
+        assets={assets}
+        invoices={invoices}
       />
     </div>
   );
