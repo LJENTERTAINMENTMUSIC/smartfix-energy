@@ -7,9 +7,10 @@ const navLinks = [
   { label: "Solutions", path: "/#solutions" },
   { label: "CNG", path: "/cng" },
   { label: "Generators", path: "/generators" },
+  { label: "Fuel", path: "/fuel" },
   { label: "Solar", path: "/solar" },
   { label: "Hybrid", path: "/hybrid-energy" },
-  { label: "Industries", path: "/industries" },
+  { label: "Track Project", path: "/track" },
   { label: "About", path: "/about" },
   { label: "Contact", path: "/contact" },
 ];

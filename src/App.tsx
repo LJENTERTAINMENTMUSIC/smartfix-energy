@@ -17,6 +17,8 @@ import Maintenance from "@/pages/Maintenance";
 import Industries from "@/pages/Industries";
 import About from "@/pages/About";
 import CaseStudies from "@/pages/CaseStudies";
+import Fuel from "@/pages/Fuel";
+import TrackProject from "@/pages/TrackProject";
 import Quote from "@/pages/Quote";
 import Contact from "@/pages/Contact";
 
@@ -42,6 +44,8 @@ export default function App() {
           <Route path="/cng/fleet-conversion" element={<CNG />} />
           <Route path="/cng/generator-conversion" element={<CNGGenerator />} />
           <Route path="/generators" element={<Generators />} />
+          <Route path="/fuel" element={<Fuel />} />
+          <Route path="/diesel-supply" element={<Fuel />} />
           <Route path="/solar" element={<Solar />} />
           <Route path="/battery-storage" element={<Solar />} />
           <Route path="/hybrid-energy" element={<HybridEnergy />} />
@@ -50,6 +54,8 @@ export default function App() {
           <Route path="/industries" element={<Industries />} />
           <Route path="/about" element={<About />} />
           <Route path="/case-studies" element={<CaseStudies />} />
+          <Route path="/track" element={<TrackProject />} />
+          <Route path="/my-project" element={<TrackProject />} />
           <Route path="/request-quote" element={<Quote />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="*" element={<Home />} />

@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Factory, Cog, Wrench, Package, Settings, CheckCircle, Stethoscope, Activity, Network, Gauge, ArrowRight } from "lucide-react";
+import GeneratorConversionWizard from "@/components/generator/GeneratorConversionWizard";
 
 const services = [
   { icon: Factory, title: "CNG Conversion", desc: "Convert diesel/petrol generators to run on CNG." },
@@ -17,7 +18,7 @@ const services = [
 export default function CNGGenerator() {
   return (
     <>
-      <section className="relative min-h-[50vh] flex items-center overflow-hidden pt-4">
+      <section className="relative min-h-[50vh] flex items-center overflow-hidden pt-4 pb-10">
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-1/3 left-1/4 w-80 h-80 rounded-full bg-[var(--energy-green)] opacity-[0.06] blur-[120px]" />
           <div className="absolute bottom-1/3 right-1/4 w-80 h-80 rounded-full bg-[var(--cng-blue)] opacity-[0.05] blur-[120px]" />
@@ -38,17 +39,25 @@ export default function CNGGenerator() {
               <br /><span className="text-gradient-green">INTO A SMARTER POWER ASSET.</span>
             </h1>
             <p className="mt-6 max-w-2xl text-base md:text-lg text-[var(--muted-foreground)] leading-relaxed reveal reveal-delay-2">
-              Convert, supply, install and maintain CNG-powered generator systems. Reduce fuel costs,
-              improve reliability and transition to cleaner power generation.
+              Convert, supply, install and maintain CNG-powered generator systems. Reduce fuel costs by up to 60%,
+              improve reliability and transition to cleaner dual-fuel power generation.
             </p>
-            <Link to="/request-quote" className="group mt-8 inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-[var(--energy-green)] text-[var(--obsidian)] font-semibold btn-magnetic glow-green reveal reveal-delay-3">
-              Convert My Generator <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </Link>
+            <a href="#wizard" className="group mt-8 inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-[var(--energy-green)] text-[var(--obsidian)] font-semibold btn-magnetic glow-green reveal reveal-delay-3">
+              Start Generator Energy Wizard <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </a>
           </div>
         </div>
       </section>
 
-      <section className="section-padding relative">
+      {/* Generator Conversion Wizard Section */}
+      <section id="wizard" className="py-12 md:py-16 relative">
+        <div className="max-w-7xl mx-auto px-4 md:px-6">
+          <GeneratorConversionWizard />
+        </div>
+      </section>
+
+      {/* Services Grid */}
+      <section className="section-padding relative border-t border-white/5">
         <div className="max-w-7xl mx-auto px-4 md:px-6">
           <div className="text-center mb-10">
             <h2 className="font-display font-bold text-3xl md:text-5xl tracking-tight">

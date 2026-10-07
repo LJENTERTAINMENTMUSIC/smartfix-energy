@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   LayoutDashboard, Package, Users, Plus, Pencil, Trash2, Tag, Star, X,
   TrendingUp, Boxes, Flame, AlertCircle, RotateCcw, Check, LogOut,
+  Cpu, ShieldCheck, Truck, PackageCheck, FileText, CheckCircle2,
 } from "lucide-react";
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid,
@@ -15,7 +16,7 @@ import {
 
 /* ------------------------------------------------------------------ */
 
-type Tab = "overview" | "products" | "sales";
+type Tab = "overview" | "products" | "sales" | "workforce";
 
 const inputCls =
   "w-full rounded-lg bg-[var(--graphite)] border border-[var(--border)] px-3 py-2 text-sm text-[var(--electric)] placeholder:text-[var(--muted-foreground)] focus:outline-none focus:border-[var(--energy-green)] focus:ring-2 focus:ring-[rgba(0,217,127,0.15)] transition-all [color-scheme:dark]";
@@ -254,6 +255,7 @@ export default function Admin({ onSignOut }: { onSignOut?: () => void }) {
     { id: "overview", label: "Overview", icon: LayoutDashboard },
     { id: "products", label: "Products", icon: Package },
     { id: "sales", label: "Sales & Leads", icon: Users },
+    { id: "workforce", label: "AI Workforce & Projects", icon: Cpu },
   ];
 
   return (
@@ -549,6 +551,145 @@ export default function Admin({ onSignOut }: { onSignOut?: () => void }) {
               Lead capture from the public forms (conversion wizard &amp; quote requests) will flow here
               automatically once the backend pipeline is connected.
             </p>
+          </div>
+        )}
+
+        {/* ══ TAB: AI WORKFORCE & PROJECTS ══ */}
+        {tab === "workforce" && (
+          <div className="space-y-8">
+            {/* Orchestrator Live Banner */}
+            <div className="glass-card p-6 md:p-8 rounded-3xl border border-white/10 relative overflow-hidden">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                <div>
+                  <div className="inline-flex items-center gap-2 glass-panel rounded-full px-3 py-1 mb-2">
+                    <span className="w-2 h-2 rounded-full bg-[var(--energy-green)] pulse-ring" />
+                    <span className="text-[11px] font-mono text-[var(--energy-green)] font-bold tracking-wider">
+                      ORCHESTRATOR ONLINE · 1,000-AGENT EVENT BUS
+                    </span>
+                  </div>
+                  <h2 className="font-display font-bold text-2xl text-[var(--electric)]">
+                    SmartFix Autonomous Workforce Grid
+                  </h2>
+                  <p className="text-xs text-[var(--muted-foreground)]">
+                    Event-driven autonomous agents operating asynchronously across Sales, Engineering, HSE, Procurement and Logistics.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-mono text-[var(--energy-green)] px-3 py-1.5 rounded-xl bg-[var(--energy-green)]/15 border border-[var(--energy-green)]/30">
+                    Latency: 14ms · Zero Bottleneck
+                  </span>
+                </div>
+              </div>
+
+              {/* Grid of Agent Departments */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {[
+                  { name: "Sales & Qualification AI", status: "Active (Listening)", tasks: "Qualifies leads & computes pipeline priority", icon: Users, color: "var(--energy-green)" },
+                  { name: "Engineering & Sizing AI", status: "Active (Computing)", tasks: "Analyzes nameplates, models dual-fuel substitution", icon: Cpu, color: "var(--cng-blue)" },
+                  { name: "Compliance & HSE AI", status: "Active (Enforcing)", tasks: "Validates 200-bar standards & safety setback codes", icon: ShieldCheck, color: "#ff9f0a" },
+                  { name: "Procurement & BOM AI", status: "Active (Syncing)", tasks: "Allocates warehouse stock & flags supply gaps", icon: PackageCheck, color: "var(--energy-green)" },
+                  { name: "Field Logistics & Dispatch AI", status: "Active (Routing)", tasks: "Verifies material packs & coordinates technician dispatch", icon: Truck, color: "var(--cng-blue)" },
+                  { name: "Customer Concierge AI", status: "Active (Chatting)", tasks: "Syncs web, WhatsApp, and project tracker state", icon: Sparkles, color: "var(--electric)" },
+                ].map((agent) => {
+                  const Icon = agent.icon;
+                  return (
+                    <div key={agent.name} className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 flex flex-col justify-between">
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: `${agent.color}20`, color: agent.color }}>
+                            <Icon className="w-4 h-4" />
+                          </div>
+                          <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/5 text-[var(--energy-green)]">
+                            {agent.status}
+                          </span>
+                        </div>
+                        <h4 className="font-display font-semibold text-sm text-[var(--electric)]">
+                          {agent.name}
+                        </h4>
+                        <p className="text-xs text-[var(--muted-foreground)] mt-1">
+                          {agent.tasks}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Active Project Packs & Material Control */}
+            <div className="glass-card p-6 md:p-8 rounded-3xl border border-white/10">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h3 className="font-display font-bold text-xl text-[var(--electric)]">
+                    Active Project Packs &amp; Material Readiness
+                  </h3>
+                  <p className="text-xs text-[var(--muted-foreground)]">
+                    Single source of truth from intake to commissioning.
+                  </p>
+                </div>
+                <span className="text-xs font-mono text-[var(--muted-foreground)]">
+                  Chain: Warehouse → Vehicle → Site → Installed
+                </span>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left text-xs uppercase tracking-wider text-[var(--muted-foreground)] border-b border-[var(--border)]">
+                      <th className="px-4 py-3 font-medium">Project ID</th>
+                      <th className="px-4 py-3 font-medium">Customer / Facility</th>
+                      <th className="px-4 py-3 font-medium">Equipment</th>
+                      <th className="px-4 py-3 font-medium">Status</th>
+                      <th className="px-4 py-3 font-medium">Materials Pack</th>
+                      <th className="px-4 py-3 font-medium">Field Lead</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[
+                      {
+                        id: "SFE-GEN-LAG-00231",
+                        customer: "ABC Manufacturing (Ikeja)",
+                        equipment: "3 × 500 kVA Perkins Diesel",
+                        status: "Engineering Review",
+                        materials: "12/12 Allocated (0 Variance)",
+                        lead: "Engr. Tunde A.",
+                      },
+                      {
+                        id: "SFE-FLT-VIC-00109",
+                        customer: "TransCorp Logistics (VI)",
+                        equipment: "25 × Toyota HiAce Petrol",
+                        status: "Site Readiness Pack",
+                        materials: "25/25 Tanks Staged",
+                        lead: "Engr. Michael O.",
+                      },
+                      {
+                        id: "SFE-HYB-LEK-00045",
+                        customer: "Grandview Estates (Lekki)",
+                        equipment: "Solar PV + 100kVA CNG Microgrid",
+                        status: "Site Assessment",
+                        materials: "In Transit to Site",
+                        lead: "Engr. Sarah D.",
+                      },
+                    ].map((p) => (
+                      <tr key={p.id} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
+                        <td className="px-4 py-3 font-mono font-semibold text-[var(--energy-green)] whitespace-nowrap">
+                          {p.id}
+                        </td>
+                        <td className="px-4 py-3 text-[var(--electric)] font-medium whitespace-nowrap">{p.customer}</td>
+                        <td className="px-4 py-3 text-[var(--muted-foreground)] whitespace-nowrap">{p.equipment}</td>
+                        <td className="px-4 py-3">
+                          <span className="text-xs px-2.5 py-1 rounded-full bg-[var(--cng-blue)]/15 text-[var(--cng-blue)] font-medium">
+                            {p.status}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-xs text-[var(--electric)] whitespace-nowrap">{p.materials}</td>
+                        <td className="px-4 py-3 text-xs text-[var(--muted-foreground)] whitespace-nowrap">{p.lead}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         )}
       </div>

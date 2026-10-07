@@ -1,8 +1,13 @@
+import { useState } from "react";
 import Hero from "@/components/home/Hero";
-import Solutions from "@/components/home/Solutions";
+import ServiceSelector from "@/components/home/ServiceSelector";
+import EnergyAdvisory from "@/components/home/EnergyAdvisory";
+import HowItWorks from "@/components/home/HowItWorks";
 import BillboardSlider from "@/components/home/BillboardSlider";
+import Solutions from "@/components/home/Solutions";
 import WhySmartFix from "@/components/home/WhySmartFix";
 import FinalCTA from "@/components/home/FinalCTA";
+import SmartFixConciergeModal from "@/components/concierge/SmartFixConciergeModal";
 import { Truck, Factory, Hotel, HeartPulse, Building2, Briefcase, Landmark, Wheat } from "lucide-react";
 
 const industries = [
@@ -51,14 +56,25 @@ function Industries() {
 }
 
 export default function Home() {
+  const [showConcierge, setShowConcierge] = useState(false);
+
   return (
     <>
       <Hero />
-      <Solutions />
+      <ServiceSelector onOpenConcierge={() => setShowConcierge(true)} />
       <BillboardSlider />
+      <EnergyAdvisory onOpenConcierge={() => setShowConcierge(true)} />
+      <HowItWorks />
+      <Solutions />
       <WhySmartFix />
       <Industries />
       <FinalCTA />
+
+      {/* Global AI Concierge Modal */}
+      <SmartFixConciergeModal
+        isOpen={showConcierge}
+        onClose={() => setShowConcierge(false)}
+      />
     </>
   );
 }

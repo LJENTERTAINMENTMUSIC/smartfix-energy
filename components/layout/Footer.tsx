@@ -8,6 +8,7 @@ const footerSections = [
     title: "Solutions",
     links: [
       { label: "CNG Conversion", path: "/cng" },
+      { label: "SmartFix Fuel (Diesel & CNG)", path: "/fuel" },
       { label: "Generators", path: "/generators" },
       { label: "Solar & Battery", path: "/solar" },
       { label: "Hybrid Energy", path: "/hybrid-energy" },
@@ -25,12 +26,12 @@ const footerSections = [
     ],
   },
   {
-    title: "Support",
+    title: "Support & Tracking",
     links: [
+      { label: "Track My Project", path: "/track" },
       { label: "Request Service", path: "/request-quote" },
       { label: "Request Quote", path: "/request-quote" },
       { label: "WhatsApp", path: SMARTFIX_CONTACT.whatsapp, external: true },
-      { label: "AI Energy Assistant", path: "/about" },
     ],
   },
 ];
