@@ -65,6 +65,7 @@ export default function QuoteForm() {
     const pack = {
       id: projectId,
       customer: name,
+      customerEmail: email || "",
       company: company || "Direct Customer",
       equipment: `Quote Intake: ${servicesList}`,
       location: `${city || state || "Lagos"}, ${state || "Nigeria"}`,

@@ -61,6 +61,7 @@ export default function FuelPage() {
   const [volume, setVolume] = useState("5,000 - 15,000 Litres / Month");
   const [frequency, setFrequency] = useState("Bi-Weekly Scheduled");
   const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [company, setCompany] = useState("");
   const [phone, setPhone] = useState("");
   const [location, setLocation] = useState("Lagos, Nigeria");
@@ -77,6 +78,7 @@ export default function FuelPage() {
     const pack = {
       id: projectId,
       customer: name,
+      customerEmail: email,
       company: company || "Direct Facility Client",
       equipment: `Bulk Fuel Supply: ${fuelType} (${volume})`,
       location,
@@ -96,7 +98,7 @@ export default function FuelPage() {
 
       await catalog.addLead({
         name,
-        email: `${phone.replace(/\s+/g, "")}@smartfixenergy.com`,
+        email: email.trim() || `${phone.replace(/\s+/g, "")}@smartfixenergy.com`,
         phone,
         company: company || "Direct Facility Client",
         service: `[${projectId}] SMARTFIX FUEL: ${fuelType} (${volume})`,
@@ -306,12 +308,14 @@ export default function FuelPage() {
                 </div>
                 <div>
                   <label className="text-xs font-semibold text-[var(--muted-foreground)] block mb-1.5">
-                    Company / Facility Name
+                    Official Email Address *
                   </label>
                   <input
-                    value={company}
-                    onChange={(e) => setCompany(e.target.value)}
-                    placeholder="e.g. Radisson Blu / ABC Factory"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="procurement@company.com"
+                    required
                     className="w-full px-3 py-3 rounded-xl bg-[#141417] text-[#f5f5f7] border border-white/10 text-xs sm:text-sm outline-none focus:border-[var(--energy-green)]"
                   />
                 </div>
@@ -332,15 +336,27 @@ export default function FuelPage() {
                 </div>
                 <div>
                   <label className="text-xs font-semibold text-[var(--muted-foreground)] block mb-1.5">
-                    Delivery Location / State
+                    Company / Facility Name
                   </label>
                   <input
-                    value={location}
-                    onChange={(e) => setLocation(e.target.value)}
-                    placeholder="e.g. Ikeja, Lagos"
+                    value={company}
+                    onChange={(e) => setCompany(e.target.value)}
+                    placeholder="e.g. Radisson Blu / ABC Factory"
                     className="w-full px-3 py-3 rounded-xl bg-[#141417] text-[#f5f5f7] border border-white/10 text-xs sm:text-sm outline-none focus:border-[var(--energy-green)]"
                   />
                 </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-[var(--muted-foreground)] block mb-1.5">
+                  Delivery Location / State
+                </label>
+                <input
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  placeholder="e.g. Ikeja, Lagos"
+                  className="w-full px-3 py-3 rounded-xl bg-[#141417] text-[#f5f5f7] border border-white/10 text-xs sm:text-sm outline-none focus:border-[var(--energy-green)]"
+                />
               </div>
 
               <button

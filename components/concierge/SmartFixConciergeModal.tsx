@@ -51,6 +51,7 @@ export default function SmartFixConciergeModal({
   // Form details collected
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
   const [company, setCompany] = useState("");
   const [location, setLocation] = useState("Lagos, Nigeria");
   const [equipmentName, setEquipmentName] = useState("");
@@ -127,6 +128,7 @@ export default function SmartFixConciergeModal({
       id: projectId,
       customerName: name,
       phone,
+      email: email.trim(),
       company: company || "Direct Facility Client",
       location: location || "Lagos, Nigeria",
       equipment: equipmentName || "SmartFix Energy Project",
@@ -148,7 +150,7 @@ export default function SmartFixConciergeModal({
       // Also persist to Supabase CRM leads table
       await catalog.addLead({
         name,
-        email: `${phone.replace(/\s+/g, "")}@smartfixenergy.com`,
+        email: email.trim() || `${phone.replace(/\s+/g, "")}@smartfixenergy.com`,
         phone,
         company: company || "Direct Customer",
         service: `[${projectId}] ${equipmentName || "Complete Energy Project"}`,
@@ -275,13 +277,22 @@ export default function SmartFixConciergeModal({
                 </div>
                 <div>
                   <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Official Email Address"
+                    className="w-full px-3 py-2.5 rounded-xl bg-[#141417] text-[#f5f5f7] border border-white/10 text-xs placeholder:text-[var(--muted-foreground)] focus:border-[var(--energy-green)] outline-none"
+                  />
+                </div>
+                <div>
+                  <input
                     value={company}
                     onChange={(e) => setCompany(e.target.value)}
                     placeholder="Company / Facility Name"
                     className="w-full px-3 py-2.5 rounded-xl bg-[#141417] text-[#f5f5f7] border border-white/10 text-xs placeholder:text-[var(--muted-foreground)] focus:border-[var(--energy-green)] outline-none"
                   />
                 </div>
-                <div>
+                <div className="sm:col-span-2">
                   <input
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}

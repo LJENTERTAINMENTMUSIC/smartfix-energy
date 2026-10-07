@@ -74,6 +74,7 @@ export default function GeneratorConversionWizard() {
   const [name, setName] = useState("");
   const [company, setCompany] = useState("");
   const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
   const [location, setLocation] = useState("Lagos, Nigeria");
 
   // Photos & OCR
@@ -128,6 +129,7 @@ export default function GeneratorConversionWizard() {
       id: projectId,
       customerName: name,
       phone,
+      email: email.trim(),
       company: company || "Commercial Client",
       location,
       equipment: `${gensetCount} × ${kva} ${make} ${model ? `(${model})` : ""}`,
@@ -151,7 +153,7 @@ export default function GeneratorConversionWizard() {
 
       await catalog.addLead({
         name,
-        email: `${phone.replace(/\s+/g, "")}@smartfixenergy.com`,
+        email: email.trim() || `${phone.replace(/\s+/g, "")}@smartfixenergy.com`,
         phone,
         company: company || "Direct Facility Client",
         service: `[${projectId}] GENERATOR CONVERSION: ${pack.equipment}`,
@@ -517,6 +519,18 @@ export default function GeneratorConversionWizard() {
             </div>
             <div>
               <label className="text-xs font-semibold text-[var(--muted-foreground)] block mb-1.5">
+                Official Email Address
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="name@company.com"
+                className="w-full px-3 py-3 rounded-xl bg-[#141417] text-[#f5f5f7] border border-white/10 text-xs sm:text-sm outline-none focus:border-[var(--energy-green)]"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-[var(--muted-foreground)] block mb-1.5">
                 Company / Facility
               </label>
               <input
@@ -526,7 +540,7 @@ export default function GeneratorConversionWizard() {
                 className="w-full px-3 py-3 rounded-xl bg-[#141417] text-[#f5f5f7] border border-white/10 text-xs sm:text-sm outline-none focus:border-[var(--energy-green)]"
               />
             </div>
-            <div>
+            <div className="sm:col-span-2">
               <label className="text-xs font-semibold text-[var(--muted-foreground)] block mb-1.5">
                 Site Location
               </label>

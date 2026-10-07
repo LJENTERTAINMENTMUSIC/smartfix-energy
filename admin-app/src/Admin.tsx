@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Package, Users, Plus, Pencil, Trash2, Tag, Star, X,
   TrendingUp, Boxes, Flame, AlertCircle, RotateCcw, Check, LogOut,
   Cpu, ShieldCheck, Truck, PackageCheck, FileText, CheckCircle2,
-  Phone, MessageSquare, ExternalLink, MapPin, Sparkles,
+  Phone, MessageSquare, ExternalLink, MapPin, Sparkles, Mail,
 } from "lucide-react";
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid,
@@ -241,6 +241,7 @@ export default function Admin({ onSignOut }: { onSignOut?: () => void }) {
           id: "SFE-GEN-LAG-00231",
           customer: "ABC Manufacturing (Ikeja)",
           phone: "0803 123 4567",
+          email: "operations@abcmanufacturing.ng",
           location: "Ikeja, Lagos",
           equipment: "3 × 500 kVA Perkins Diesel (CNG Dual-Fuel)",
           status: "Engineering Review",
@@ -253,6 +254,7 @@ export default function Admin({ onSignOut }: { onSignOut?: () => void }) {
           id: "SFE-FLT-VIC-00109",
           customer: "TransCorp Logistics (VI)",
           phone: "0802 987 6543",
+          email: "fleet@transcorplogistics.ng",
           location: "Victoria Island, Lagos",
           equipment: "25 × Toyota HiAce Petrol (CNG Conversion)",
           status: "Site Readiness Pack",
@@ -265,6 +267,7 @@ export default function Admin({ onSignOut }: { onSignOut?: () => void }) {
           id: "SFE-HYB-LEK-00045",
           customer: "Grandview Estates (Lekki)",
           phone: "0814 555 7890",
+          email: "facility@grandviewestates.ng",
           location: "Lekki Phase 1, Lagos",
           equipment: "Solar PV + 100kVA CNG Microgrid",
           status: "Site Assessment",
@@ -325,6 +328,7 @@ export default function Admin({ onSignOut }: { onSignOut?: () => void }) {
         id,
         customer: `${l?.name || "Customer"}${l?.company ? ` (${l.company})` : ""}`,
         phone: l?.phone || "",
+        email: l?.email || "",
         location: l?.location || "Lagos, Nigeria",
         equipment: cleanService,
         status,
@@ -614,35 +618,90 @@ export default function Admin({ onSignOut }: { onSignOut?: () => void }) {
                     </tr>
                   </thead>
                   <tbody>
-                    {leads.map((l) => (
-                      <tr key={l.id} className="border-b border-[rgba(255,255,255,0.04)] hover:bg-[rgba(255,255,255,0.02)] transition-colors">
-                        <td className="px-5 py-3 text-[var(--electric)] font-medium whitespace-nowrap">{l.name}</td>
-                        <td className="px-5 py-3 text-[var(--muted-foreground)] whitespace-nowrap">{l.service}</td>
-                        <td className="px-5 py-3 text-[var(--muted-foreground)] whitespace-nowrap">{l.location}</td>
-                        <td className="px-5 py-3 text-[var(--muted-foreground)] whitespace-nowrap">{l.budget}</td>
-                        <td className="px-5 py-3 text-[var(--energy-green)] font-semibold whitespace-nowrap">{formatNaira(l.value)}</td>
-                        <td className="px-5 py-3">
-                          <select
-                            aria-label={`Lead status for ${l.name}`}
-                            name="leadStatus"
-                            value={l.status}
-                            onChange={(e) => updateLeadStatus(l.id, e.target.value as LeadStatus)}
-                            className={`text-xs px-2.5 py-1.5 rounded-full border-0 focus:outline-none cursor-pointer font-medium ${
-                              l.status === "Hot" ? "bg-[rgba(0,217,127,0.15)] text-[var(--energy-green)]"
-                              : l.status === "Qualified" ? "bg-[rgba(0,168,255,0.15)] text-[var(--cng-blue)]"
-                              : "bg-[rgba(138,138,142,0.18)] text-[var(--silver)]"
-                            }`}
-                          >
-                            {LEAD_STATUSES.map((s) => <option key={s} value={s} className="text-[var(--electric)] bg-[var(--graphite)]">{s}</option>)}
-                          </select>
-                        </td>
-                        <td className="px-5 py-3 text-right">
-                          <button onClick={() => removeLead(l.id)} className="press-scale w-8 h-8 rounded-lg glass-panel text-[var(--muted-foreground)] hover:text-red-400 inline-flex items-center justify-center" aria-label="Delete lead">
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
+                    {leads.map((l) => {
+                      const cleanLeadPhone = l.phone ? l.phone.replace(/[^0-9]/g, "").replace(/^0/, "") : "";
+                      return (
+                        <tr key={l.id} className="border-b border-[rgba(255,255,255,0.04)] hover:bg-[rgba(255,255,255,0.02)] transition-colors">
+                          <td className="px-5 py-3 whitespace-nowrap">
+                            <div className="text-[var(--electric)] font-medium">{l.name}</div>
+                            {l.company && <div className="text-xs text-[var(--muted-foreground)]">{l.company}</div>}
+                            <div className="text-[11px] text-[var(--muted-foreground)] font-mono flex items-center gap-1.5 mt-0.5">
+                              <span>{l.phone}</span>
+                              {l.email && <span className="text-[var(--energy-green)]">· {l.email}</span>}
+                            </div>
+                          </td>
+                          <td className="px-5 py-3 text-[var(--muted-foreground)] whitespace-nowrap">{l.service}</td>
+                          <td className="px-5 py-3 text-[var(--muted-foreground)] whitespace-nowrap">{l.location}</td>
+                          <td className="px-5 py-3 text-[var(--muted-foreground)] whitespace-nowrap">{l.budget}</td>
+                          <td className="px-5 py-3 text-[var(--energy-green)] font-semibold whitespace-nowrap">{formatNaira(l.value)}</td>
+                          <td className="px-5 py-3">
+                            <select
+                              aria-label={`Lead status for ${l.name}`}
+                              name="leadStatus"
+                              value={l.status}
+                              onChange={(e) => updateLeadStatus(l.id, e.target.value as LeadStatus)}
+                              className={`text-xs px-2.5 py-1.5 rounded-full border-0 focus:outline-none cursor-pointer font-medium ${
+                                l.status === "Hot" ? "bg-[rgba(0,217,127,0.15)] text-[var(--energy-green)]"
+                                : l.status === "Qualified" ? "bg-[rgba(0,168,255,0.15)] text-[var(--cng-blue)]"
+                                : "bg-[rgba(138,138,142,0.18)] text-[var(--silver)]"
+                              }`}
+                            >
+                              {LEAD_STATUSES.map((s) => <option key={s} value={s} className="text-[var(--electric)] bg-[var(--graphite)]">{s}</option>)}
+                            </select>
+                          </td>
+                          <td className="px-5 py-3 text-right">
+                            <div className="flex items-center justify-end gap-1.5">
+                              {cleanLeadPhone && (
+                                <a
+                                  href={`https://wa.me/234${cleanLeadPhone}?text=${encodeURIComponent(
+                                    `Hello ${l.name}, reaching out from SmartFix Energy regarding your enquiry for ${l.service}.`
+                                  )}`}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="press-scale w-8 h-8 rounded-lg glass-panel text-[var(--energy-green)] hover:bg-[var(--energy-green)]/20 inline-flex items-center justify-center transition-colors"
+                                  title="Chat on WhatsApp"
+                                  aria-label="WhatsApp Client"
+                                >
+                                  <MessageSquare className="w-4 h-4" />
+                                </a>
+                              )}
+                              {l.phone && (
+                                <a
+                                  href={`tel:${l.phone}`}
+                                  className="press-scale w-8 h-8 rounded-lg glass-panel text-[var(--cng-blue)] hover:bg-[var(--cng-blue)]/20 inline-flex items-center justify-center transition-colors"
+                                  title="Call Client"
+                                  aria-label="Call Client"
+                                >
+                                  <Phone className="w-4 h-4" />
+                                </a>
+                              )}
+                              {l.email && (
+                                <a
+                                  href={`mailto:${l.email}?subject=${encodeURIComponent(
+                                    `SmartFix Energy · Inquiry Update for ${l.service}`
+                                  )}&body=${encodeURIComponent(
+                                    `Dear ${l.name},\n\nThank you for reaching out to SmartFix Energy regarding ${l.service}.\n\n`
+                                  )}`}
+                                  className="press-scale w-8 h-8 rounded-lg glass-panel text-[var(--electric)] hover:text-[var(--cng-blue)] hover:bg-[var(--cng-blue)]/20 inline-flex items-center justify-center transition-colors"
+                                  title={`Email ${l.email}`}
+                                  aria-label="Email Client"
+                                >
+                                  <Mail className="w-4 h-4" />
+                                </a>
+                              )}
+                              <button
+                                onClick={() => removeLead(l.id)}
+                                className="press-scale w-8 h-8 rounded-lg glass-panel text-[var(--muted-foreground)] hover:text-red-400 inline-flex items-center justify-center transition-colors"
+                                aria-label="Delete lead"
+                                title="Delete Lead"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
                     {leads.length === 0 && (
                       <tr><td colSpan={7} className="px-5 py-10 text-center text-[var(--muted-foreground)]">No leads yet.</td></tr>
                     )}
@@ -763,13 +822,26 @@ export default function Admin({ onSignOut }: { onSignOut?: () => void }) {
                           </td>
                           <td className="px-4 py-3 whitespace-nowrap text-xs text-[var(--muted-foreground)]">
                             <div className="flex items-center gap-1.5">
-                              <MapPin className="w-3.5 h-3.5 text-[var(--cng-blue)]" />
+                              <MapPin className="w-3.5 h-3.5 text-[var(--cng-blue)] flex-shrink-0" />
                               <span>{p.location || "Lagos, Nigeria"}</span>
                             </div>
                             <div className="flex items-center gap-1.5 mt-0.5 font-mono text-[11px]">
-                              <Phone className="w-3 h-3 text-[var(--energy-green)]" />
+                              <Phone className="w-3 h-3 text-[var(--energy-green)] flex-shrink-0" />
                               <span>{p.phone}</span>
                             </div>
+                            {p.email ? (
+                              <div className="flex items-center gap-1.5 mt-0.5 font-mono text-[11px] text-[var(--energy-green)]">
+                                <Mail className="w-3 h-3 text-[var(--energy-green)] flex-shrink-0" />
+                                <a href={`mailto:${p.email}`} className="hover:underline" title={`Email ${p.email}`}>
+                                  {p.email}
+                                </a>
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-1.5 mt-0.5 font-mono text-[11px] text-white/35">
+                                <Mail className="w-3 h-3 text-white/25 flex-shrink-0" />
+                                <span className="italic">No email provided</span>
+                              </div>
+                            )}
                           </td>
                           <td className="px-4 py-3 text-[var(--muted-foreground)] text-xs max-w-[220px] truncate" title={p.equipment}>
                             {p.equipment}
@@ -829,6 +901,20 @@ export default function Admin({ onSignOut }: { onSignOut?: () => void }) {
                                   aria-label="Call Client"
                                 >
                                   <Phone className="w-4 h-4" />
+                                </a>
+                              )}
+                              {p.email && (
+                                <a
+                                  href={`mailto:${p.email}?subject=${encodeURIComponent(
+                                    `SmartFix Energy · Project Pack ${p.id}`
+                                  )}&body=${encodeURIComponent(
+                                    `Dear ${p.customer},\n\nRe: SmartFix Energy Project Pack ${p.id} (${p.equipment}).\n\nOur engineering and operations team has reviewed your project requirements...`
+                                  )}`}
+                                  className="press-scale w-8 h-8 rounded-lg glass-panel text-[var(--electric)] hover:text-[var(--cng-blue)] hover:bg-[var(--cng-blue)]/20 inline-flex items-center justify-center transition-colors"
+                                  title={`Email ${p.email}`}
+                                  aria-label="Email Client"
+                                >
+                                  <Mail className="w-4 h-4" />
                                 </a>
                               )}
                               {p.rawLeadId && (

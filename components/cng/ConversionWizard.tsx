@@ -75,6 +75,7 @@ export default function ConversionWizard() {
     const pack = {
       id: projectId,
       customer: data.name,
+      customerEmail: data.email || "",
       company: data.brand ? `${data.brand} ${data.model || ""} (${data.year || ""})` : "Vehicle Owner",
       equipment: `CNG Conversion: ${vehicleDesc}`,
       location: `${data.city || data.state}, ${data.state || "Nigeria"}`,
