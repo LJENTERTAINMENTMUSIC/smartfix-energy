@@ -2,9 +2,9 @@ import { fileURLToPath, URL } from "node:url";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
-// "@shared" points at the shared source folder in the repo root (/lib)
 export default defineConfig({
   plugins: [react()],
+  base: "/admin/",
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),
