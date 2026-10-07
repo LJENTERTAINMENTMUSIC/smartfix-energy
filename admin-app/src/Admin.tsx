@@ -276,28 +276,30 @@ export default function Admin({ onSignOut }: { onSignOut?: () => void }) {
       ];
     }
 
-    return leads.map((l) => {
-      // Extract project ID if present like [SFE-PRJ-2026-XXXX] or [SFE-GEN-...]
-      const match = l.service.match(/\[([A-Z0-9-]+)\]/);
+    return leads.map((l, index) => {
+      const serviceStr = typeof l?.service === "string" ? l.service : "";
+      const match = serviceStr.match(/\[([A-Z0-9-]+)\]/);
+      const leadIdStr = l?.id ? String(l.id).slice(0, 4).toUpperCase() : String(index + 1);
+
       const id = match
         ? match[1]
         : `SFE-${
-            l.service.toUpperCase().includes("GENERATOR")
+            serviceStr.toUpperCase().includes("GENERATOR")
               ? "GEN"
-              : l.service.toUpperCase().includes("FUEL")
+              : serviceStr.toUpperCase().includes("FUEL")
               ? "FUL"
-              : l.service.toUpperCase().includes("CNG") || l.service.toUpperCase().includes("VEHICLE")
+              : serviceStr.toUpperCase().includes("CNG") || serviceStr.toUpperCase().includes("VEHICLE")
               ? "VEH"
               : "PRJ"
-          }-${l.id.slice(0, 4).toUpperCase()}`;
-      const cleanService = l.service.replace(/\[[A-Z0-9-]+\]\s*/, "");
+          }-${leadIdStr}`;
+      const cleanService = (serviceStr.replace(/\[[A-Z0-9-]+\]\s*/, "") || "Energy Solution Requirement").trim();
 
       let status = "Intake Received";
       let materials = "Requirements Scoping";
-      if (l.status === "Hot") {
+      if (l?.status === "Hot") {
         status = "Engineering Review";
         materials = "BOM Staging (12/12 Allocated)";
-      } else if (l.status === "Qualified") {
+      } else if (l?.status === "Qualified") {
         status = "Site Readiness Pack";
         materials = "Pre-Packaged / Verified";
       } else {
@@ -306,7 +308,7 @@ export default function Admin({ onSignOut }: { onSignOut?: () => void }) {
       }
 
       let leadEngineer = "Engr. Tunde A. (Power)";
-      const svc = l.service.toLowerCase();
+      const svc = serviceStr.toLowerCase();
       if (svc.includes("fuel") || svc.includes("diesel")) {
         leadEngineer = "Engr. Sarah D. (Procurement)";
       } else if (
@@ -321,15 +323,15 @@ export default function Admin({ onSignOut }: { onSignOut?: () => void }) {
 
       return {
         id,
-        customer: `${l.name}${l.company ? ` (${l.company})` : ""}`,
-        phone: l.phone,
-        location: l.location,
+        customer: `${l?.name || "Customer"}${l?.company ? ` (${l.company})` : ""}`,
+        phone: l?.phone || "",
+        location: l?.location || "Lagos, Nigeria",
         equipment: cleanService,
         status,
-        leadStatus: l.status,
+        leadStatus: l?.status || "Hot",
         materials,
         lead: leadEngineer,
-        rawLeadId: l.id,
+        rawLeadId: l?.id || null,
       };
     });
   }, [leads]);
@@ -747,10 +749,10 @@ export default function Admin({ onSignOut }: { onSignOut?: () => void }) {
                     </tr>
                   </thead>
                   <tbody>
-                    {liveProjects.map((p) => {
+                    {liveProjects.map((p, index) => {
                       const cleanPhone = p.phone ? p.phone.replace(/[^0-9]/g, "").replace(/^0/, "") : "";
                       return (
-                        <tr key={p.id} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
+                        <tr key={`${p.id}-${index}`} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
                           <td className="px-4 py-3 whitespace-nowrap">
                             <span className="font-mono font-semibold text-[var(--energy-green)] px-2.5 py-1 rounded-md bg-[var(--energy-green)]/10 border border-[var(--energy-green)]/20 text-xs">
                               {p.id}
