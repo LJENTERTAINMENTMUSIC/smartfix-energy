@@ -344,7 +344,7 @@ export default function Admin({ onSignOut }: { onSignOut?: () => void }) {
                       <Tooltip
                         cursor={{ fill: "rgba(255,255,255,0.04)" }}
                         contentStyle={{ background: "#141417", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12, color: "#f5f5f7" }}
-                        formatter={(v) => [`₦${Number(v)}m`, "Revenue"]}
+                        formatter={(v: any) => [`₦${Number(v)}m`, "Revenue"]}
                       />
                       <Bar dataKey="value" radius={[6, 6, 0, 0]}>
                         {revenueByCategory.map((_, i) => (

@@ -199,10 +199,10 @@ export default function App() {
       return;
     }
     let cancelled = false;
-    supabase.auth.getSession().then(({ data }) => {
+    supabase.auth.getSession().then(({ data }: any) => {
       if (!cancelled) setPhase(data.session ? "ready" : "login");
     });
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((_event: any, session: any) => {
       setPhase(session ? "ready" : "login");
     });
     return () => {
