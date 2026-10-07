@@ -28,6 +28,7 @@ const footerSections = [
   {
     title: "Support & Tracking",
     links: [
+      { label: "My SmartFix Portal", path: "/portal" },
       { label: "Track My Project", path: "/track" },
       { label: "Request Service", path: "/request-quote" },
       { label: "Request Quote", path: "/request-quote" },

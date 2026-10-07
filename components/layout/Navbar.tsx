@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X } from "lucide-react";
+import { Menu, X, User } from "lucide-react";
 import Logo from "@/components/layout/Logo";
 
 const navLinks = [
@@ -10,6 +10,7 @@ const navLinks = [
   { label: "Fuel", path: "/fuel" },
   { label: "Solar", path: "/solar" },
   { label: "Hybrid", path: "/hybrid-energy" },
+  { label: "My SmartFix", path: "/portal" },
   { label: "Track Project", path: "/track" },
   { label: "About", path: "/about" },
   { label: "Contact", path: "/contact" },
@@ -36,7 +37,7 @@ export default function Navbar() {
                 to={link.path}
                 className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
                   location.pathname === link.path.split("/")[1] && link.path !== "/#"
-                    ? "text-[var(--energy-green)]"
+                    ? "text-[var(--energy-green)] font-semibold"
                     : "text-[var(--muted-foreground)] hover:text-[var(--electric)]"
                 }`}
               >
@@ -47,6 +48,13 @@ export default function Navbar() {
 
           {/* CTA + mobile toggle */}
           <div className="flex items-center gap-2">
+            <Link
+              to="/portal"
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl glass-panel text-xs sm:text-sm font-semibold text-[var(--electric)] hover:text-[var(--energy-green)] hover:border-[var(--energy-green)]/40 transition-all cursor-pointer"
+            >
+              <User className="w-3.5 h-3.5 text-[var(--energy-green)]" />
+              <span>My SmartFix</span>
+            </Link>
             <Link
               to="/request-quote"
               className="hidden md:inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[var(--energy-green)] text-[var(--obsidian)] text-sm font-semibold btn-magnetic glow-green"

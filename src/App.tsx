@@ -21,6 +21,7 @@ import Fuel from "@/pages/Fuel";
 import TrackProject from "@/pages/TrackProject";
 import Quote from "@/pages/Quote";
 import Contact from "@/pages/Contact";
+import CustomerPortal from "@/pages/CustomerPortal";
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -56,6 +57,9 @@ export default function App() {
           <Route path="/case-studies" element={<CaseStudies />} />
           <Route path="/track" element={<TrackProject />} />
           <Route path="/my-project" element={<TrackProject />} />
+          <Route path="/portal" element={<CustomerPortal />} />
+          <Route path="/my-smartfix" element={<CustomerPortal />} />
+          <Route path="/customer-portal" element={<CustomerPortal />} />
           <Route path="/request-quote" element={<Quote />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="*" element={<Home />} />
