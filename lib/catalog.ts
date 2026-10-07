@@ -176,10 +176,13 @@ export const catalog = {
 
   async addLead(l: Omit<Lead, "id">) {
     if (!supabase) return;
-    const { data } = await supabase.from("leads").insert([l]).select();
-    if (data && data.length > 0) {
-      commit({ ...state, leads: [data[0] as Lead, ...state.leads.filter(x => x.id !== data[0].id)] });
-    }
+    const tempLead: Lead = {
+      id: typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+      ...l,
+      created_at: new Date().toISOString(),
+    };
+    commit({ ...state, leads: [tempLead, ...state.leads] });
+    await supabase.from("leads").insert([l]);
   },
 
   async updateLead(id: string, patch: Partial<Lead>) {
