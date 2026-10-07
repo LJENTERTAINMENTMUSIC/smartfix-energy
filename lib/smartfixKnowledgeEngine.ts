@@ -833,7 +833,7 @@ export class SmartFixKnowledgeEngine {
     }
 
     // 7. COMPLIANCE & REGULATION
-    if (q.includes("nmdpra") || q.includes("son") || q.includes("permit") || q.includes("license") || q.includes("standard") || q.includes("iso") || q.includes("regulatory") || q.includes("mancap")) {
+    if (q.includes("nmdpra") || q.includes("son") || q.includes("permit") || q.includes("license") || q.includes("standard") || q.includes("iso") || q.includes("regulat") || q.includes("mancap") || q.includes("approved") || q.includes("cylinder") || q.includes("certif")) {
       return { category: "COMPLIANCE", agent: "ComplianceAgent", isEmergency: false };
     }
 
