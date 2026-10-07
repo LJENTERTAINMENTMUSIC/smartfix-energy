@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Check, ArrowRight, Upload, ChevronLeft } from "lucide-react";
+import { toast } from "sonner";
+import { catalog } from "@/lib/catalog";
 
 const serviceOptions = [
   "CNG Vehicle Conversion",
@@ -49,11 +51,31 @@ export default function QuoteForm() {
     );
   };
 
-  const canSubmit = selected.length > 0 && name && phone;
-
-  const handleSubmit = () => {
-    // Future: POST to /functions/v1/app — creates lead in CRM
-    console.log("Quote Request:", { selected, details, budget, timeline, state, city, name, company, phone, email, whatsapp });
+  const handleSubmit = async () => {
+    if (selected.length === 0) {
+      toast.error("Please select at least one service requirement above");
+      return;
+    }
+    if (!name.trim() || !phone.trim()) {
+      toast.error("Please enter your name and phone number");
+      return;
+    }
+    try {
+      await catalog.addLead({
+        name,
+        email: email || `${phone.replace(/\s+/g, "")}@smartfixenergy.com`,
+        phone,
+        company: company || "Direct Customer",
+        service: selected.join(", "),
+        location: `${city || state || "Lagos"}, ${state || "Nigeria"}`,
+        budget: budget || "Custom Quote",
+        value: 1500000,
+        status: "Hot",
+      });
+      toast.success("Quote request submitted successfully!");
+    } catch (err) {
+      console.error("Failed to add lead:", err);
+    }
     setSubmitted(true);
   };
 
@@ -245,13 +267,12 @@ export default function QuoteForm() {
       {/* Submit */}
       <button
         onClick={handleSubmit}
-        disabled={!canSubmit}
-        className="mt-6 w-full flex items-center justify-center gap-2 px-6 py-4 rounded-xl bg-[var(--energy-green)] text-[var(--obsidian)] font-bold btn-magnetic glow-green disabled:opacity-30 disabled:cursor-not-allowed"
+        className="mt-6 w-full flex items-center justify-center gap-2 px-6 py-4 rounded-xl bg-[var(--energy-green)] text-[var(--obsidian)] font-bold btn-magnetic glow-green cursor-pointer shadow-lg hover:opacity-95"
       >
         Submit Request
         <ArrowRight className="w-5 h-5" />
       </button>
-      {!canSubmit && (
+      {(!selected.length || !name.trim() || !phone.trim()) && (
         <p className="mt-2 text-xs text-center text-[var(--muted-foreground)]">
           Select at least one service and provide your name and phone number.
         </p>

@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { Check, ChevronRight, ChevronLeft, Car, User, Fuel, MapPin, Phone } from "lucide-react";
+import { toast } from "sonner";
+import { catalog } from "@/lib/catalog";
 
 const vehicleBrands = ["Toyota", "Honda", "Hyundai", "Kia", "Mercedes", "Lexus", "Nissan", "Peugeot", "Ford", "Other"];
 const usageTypes = ["Personal", "Ride-hailing", "Commercial transport", "Logistics", "Corporate fleet", "Government", "Other"];
@@ -35,20 +37,55 @@ export default function ConversionWizard() {
 
   const update = (key: keyof FormData, value: string) => setData((p) => ({ ...p, [key]: value }));
 
-  const canProceed = () => {
-    switch (step) {
-      case 0: return data.brand && data.model && data.year;
-      case 1: return data.usage;
-      case 2: return data.fuelSpend;
-      case 3: return data.state && data.city;
-      case 4: return data.name && data.phone;
-      default: return true;
+  const handleNext = () => {
+    if (step === 0) {
+      if (!data.brand) {
+        toast.error("Please choose your vehicle brand (e.g. Toyota, Honda)");
+        return;
+      }
+      if (!data.model) update("model", "Sedan / SUV");
+      if (!data.year) update("year", "2020");
+    } else if (step === 1) {
+      if (!data.usage) {
+        toast.error("Please choose how you use this vehicle");
+        return;
+      }
+    } else if (step === 2) {
+      if (!data.fuelSpend) {
+        toast.error("Please select your estimated monthly fuel spend");
+        return;
+      }
+    } else if (step === 3) {
+      if (!data.state) {
+        toast.error("Please select your state");
+        return;
+      }
+      if (!data.city) update("city", data.state);
     }
+    setStep((s) => s + 1);
   };
 
-  const handleSubmit = () => {
-    // Future: POST to /functions/v1/app — creates a qualified lead
-    console.log("CNG Conversion Lead:", data);
+  const handleSubmit = async () => {
+    if (!data.name.trim() || !data.phone.trim()) {
+      toast.error("Please provide your name and phone number");
+      return;
+    }
+    try {
+      await catalog.addLead({
+        name: data.name,
+        email: data.email || `${data.phone.replace(/\s+/g, "")}@cng.smartfixenergy.com`,
+        phone: data.phone,
+        company: data.brand ? `${data.brand} ${data.model || ""} (${data.year || ""})` : "Vehicle Owner",
+        service: "CNG Vehicle Conversion",
+        location: `${data.city || data.state}, ${data.state || "Nigeria"}`,
+        budget: data.fuelSpend ? `₦${data.fuelSpend}/month fuel spend` : "Standard",
+        value: 1250000,
+        status: "Hot",
+      });
+      toast.success("Assessment request received! A specialist will contact you.");
+    } catch (err) {
+      console.error("Failed to save lead:", err);
+    }
     setSubmitted(true);
   };
 
@@ -337,17 +374,15 @@ export default function ConversionWizard() {
             </button>
             {step < 4 ? (
               <button
-                onClick={() => canProceed() && setStep((s) => s + 1)}
-                disabled={!canProceed()}
-                className="flex items-center gap-1.5 px-5 py-2.5 rounded-lg bg-[var(--energy-green)] text-[var(--obsidian)] text-sm font-semibold disabled:opacity-30 disabled:cursor-not-allowed btn-magnetic"
+                onClick={handleNext}
+                className="flex items-center gap-1.5 px-6 py-2.5 rounded-lg bg-[var(--energy-green)] text-[var(--obsidian)] text-sm font-semibold hover:opacity-90 btn-magnetic cursor-pointer shadow-lg"
               >
                 Next <ChevronRight className="w-4 h-4" />
               </button>
             ) : (
               <button
                 onClick={handleSubmit}
-                disabled={!canProceed()}
-                className="flex items-center gap-1.5 px-6 py-3 rounded-lg bg-[var(--energy-green)] text-[var(--obsidian)] text-sm font-bold disabled:opacity-30 disabled:cursor-not-allowed btn-magnetic glow-green"
+                className="flex items-center gap-1.5 px-6 py-3 rounded-lg bg-[var(--energy-green)] text-[var(--obsidian)] text-sm font-bold hover:opacity-90 btn-magnetic glow-green cursor-pointer shadow-lg"
               >
                 Request CNG Assessment <ChevronRight className="w-4 h-4" />
               </button>

@@ -46,13 +46,17 @@ export default function CNGHero() {
 
           {/* CTA */}
           <div className="mt-8 reveal reveal-delay-3">
-            <Link
-              to="#wizard"
-              className="group inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-[var(--energy-green)] text-[var(--obsidian)] font-semibold btn-magnetic glow-green"
+            <a
+              href="#wizard"
+              onClick={(e) => {
+                e.preventDefault();
+                document.getElementById("wizard")?.scrollIntoView({ behavior: "smooth" });
+              }}
+              className="group inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-[var(--energy-green)] text-[var(--obsidian)] font-semibold btn-magnetic glow-green cursor-pointer"
             >
               Check My Vehicle
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </Link>
+            </a>
           </div>
         </div>
 
