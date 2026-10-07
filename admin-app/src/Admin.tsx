@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Package, Users, Plus, Pencil, Trash2, Tag, Star, X,
   TrendingUp, Boxes, Flame, AlertCircle, RotateCcw, Check, LogOut,
   Cpu, ShieldCheck, Truck, PackageCheck, FileText, CheckCircle2,
-  Phone, MessageSquare, ExternalLink, MapPin,
+  Phone, MessageSquare, ExternalLink, MapPin, Sparkles,
 } from "lucide-react";
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid,

@@ -86,6 +86,8 @@ function getSnapshot() {
   return state;
 }
 
+let subscriptionsInitialized = false;
+
 // Fetch initial data
 async function initStore() {
   if (!supabase) {
@@ -103,30 +105,33 @@ async function initStore() {
     loading: false
   });
 
-  // Set up realtime subscriptions
-  supabase.channel('public:products')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, (payload: any) => {
-      if (payload.eventType === 'INSERT') {
-        commit({ ...state, products: [payload.new as Product, ...state.products] });
-      } else if (payload.eventType === 'UPDATE') {
-        commit({ ...state, products: state.products.map(p => p.id === payload.new.id ? payload.new as Product : p) });
-      } else if (payload.eventType === 'DELETE') {
-        commit({ ...state, products: state.products.filter(p => p.id !== payload.old.id) });
-      }
-    })
-    .subscribe();
+  // Set up realtime subscriptions (run once only)
+  if (!subscriptionsInitialized) {
+    subscriptionsInitialized = true;
+    supabase.channel('public:products')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, (payload: any) => {
+        if (payload.eventType === 'INSERT') {
+          commit({ ...state, products: [payload.new as Product, ...state.products] });
+        } else if (payload.eventType === 'UPDATE') {
+          commit({ ...state, products: state.products.map(p => p.id === payload.new.id ? payload.new as Product : p) });
+        } else if (payload.eventType === 'DELETE') {
+          commit({ ...state, products: state.products.filter(p => p.id !== payload.old.id) });
+        }
+      })
+      .subscribe();
 
-  supabase.channel('public:leads')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'leads' }, (payload: any) => {
-      if (payload.eventType === 'INSERT') {
-        commit({ ...state, leads: [payload.new as Lead, ...state.leads] });
-      } else if (payload.eventType === 'UPDATE') {
-        commit({ ...state, leads: state.leads.map(l => l.id === payload.new.id ? payload.new as Lead : l) });
-      } else if (payload.eventType === 'DELETE') {
-        commit({ ...state, leads: state.leads.filter(l => l.id !== payload.old.id) });
-      }
-    })
-    .subscribe();
+    supabase.channel('public:leads')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'leads' }, (payload: any) => {
+        if (payload.eventType === 'INSERT') {
+          commit({ ...state, leads: [payload.new as Lead, ...state.leads] });
+        } else if (payload.eventType === 'UPDATE') {
+          commit({ ...state, leads: state.leads.map(l => l.id === payload.new.id ? payload.new as Lead : l) });
+        } else if (payload.eventType === 'DELETE') {
+          commit({ ...state, leads: state.leads.filter(l => l.id !== payload.old.id) });
+        }
+      })
+      .subscribe();
+  }
 }
 
 // Fire init immediately
