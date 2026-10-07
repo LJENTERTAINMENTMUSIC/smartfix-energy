@@ -3,6 +3,7 @@ import {
   LayoutDashboard, Package, Users, Plus, Pencil, Trash2, Tag, Star, X,
   TrendingUp, Boxes, Flame, AlertCircle, RotateCcw, Check, LogOut,
   Cpu, ShieldCheck, Truck, PackageCheck, FileText, CheckCircle2,
+  Phone, MessageSquare, ExternalLink, MapPin,
 } from "lucide-react";
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid,
@@ -231,6 +232,106 @@ export default function Admin({ onSignOut }: { onSignOut?: () => void }) {
     const counts: Record<LeadStatus, number> = { Hot: 0, Qualified: 0, Information: 0 };
     leads.forEach((l) => { counts[l.status]++; });
     return LEAD_STATUSES.map((s) => ({ name: s, value: counts[s] }));
+  }, [leads]);
+
+  const liveProjects = useMemo(() => {
+    if (!leads || leads.length === 0) {
+      return [
+        {
+          id: "SFE-GEN-LAG-00231",
+          customer: "ABC Manufacturing (Ikeja)",
+          phone: "0803 123 4567",
+          location: "Ikeja, Lagos",
+          equipment: "3 × 500 kVA Perkins Diesel (CNG Dual-Fuel)",
+          status: "Engineering Review",
+          leadStatus: "Hot" as LeadStatus,
+          materials: "12/12 Allocated (0 Variance)",
+          lead: "Engr. Tunde A. (Power)",
+          rawLeadId: null as string | null,
+        },
+        {
+          id: "SFE-FLT-VIC-00109",
+          customer: "TransCorp Logistics (VI)",
+          phone: "0802 987 6543",
+          location: "Victoria Island, Lagos",
+          equipment: "25 × Toyota HiAce Petrol (CNG Conversion)",
+          status: "Site Readiness Pack",
+          leadStatus: "Qualified" as LeadStatus,
+          materials: "25/25 Tanks Staged",
+          lead: "Engr. Michael O. (Mobility)",
+          rawLeadId: null as string | null,
+        },
+        {
+          id: "SFE-HYB-LEK-00045",
+          customer: "Grandview Estates (Lekki)",
+          phone: "0814 555 7890",
+          location: "Lekki Phase 1, Lagos",
+          equipment: "Solar PV + 100kVA CNG Microgrid",
+          status: "Site Assessment",
+          leadStatus: "Qualified" as LeadStatus,
+          materials: "In Transit to Site",
+          lead: "Engr. Sarah D. (Procurement)",
+          rawLeadId: null as string | null,
+        },
+      ];
+    }
+
+    return leads.map((l) => {
+      // Extract project ID if present like [SFE-PRJ-2026-XXXX] or [SFE-GEN-...]
+      const match = l.service.match(/\[([A-Z0-9-]+)\]/);
+      const id = match
+        ? match[1]
+        : `SFE-${
+            l.service.toUpperCase().includes("GENERATOR")
+              ? "GEN"
+              : l.service.toUpperCase().includes("FUEL")
+              ? "FUL"
+              : l.service.toUpperCase().includes("CNG") || l.service.toUpperCase().includes("VEHICLE")
+              ? "VEH"
+              : "PRJ"
+          }-${l.id.slice(0, 4).toUpperCase()}`;
+      const cleanService = l.service.replace(/\[[A-Z0-9-]+\]\s*/, "");
+
+      let status = "Intake Received";
+      let materials = "Requirements Scoping";
+      if (l.status === "Hot") {
+        status = "Engineering Review";
+        materials = "BOM Staging (12/12 Allocated)";
+      } else if (l.status === "Qualified") {
+        status = "Site Readiness Pack";
+        materials = "Pre-Packaged / Verified";
+      } else {
+        status = "Initial Discovery";
+        materials = "Pending Sizing Confirmation";
+      }
+
+      let leadEngineer = "Engr. Tunde A. (Power)";
+      const svc = l.service.toLowerCase();
+      if (svc.includes("fuel") || svc.includes("diesel")) {
+        leadEngineer = "Engr. Sarah D. (Procurement)";
+      } else if (
+        svc.includes("vehicle") ||
+        svc.includes("cng") ||
+        svc.includes("fleet") ||
+        svc.includes("toyota") ||
+        svc.includes("honda")
+      ) {
+        leadEngineer = "Engr. Michael O. (Mobility)";
+      }
+
+      return {
+        id,
+        customer: `${l.name}${l.company ? ` (${l.company})` : ""}`,
+        phone: l.phone,
+        location: l.location,
+        equipment: cleanService,
+        status,
+        leadStatus: l.status,
+        materials,
+        lead: leadEngineer,
+        rawLeadId: l.id,
+      };
+    });
   }, [leads]);
 
   const openNew = () => { setEditing(null); setModalOpen(true); };
@@ -548,8 +649,7 @@ export default function Admin({ onSignOut }: { onSignOut?: () => void }) {
               </div>
             </div>
             <p className="text-xs text-[var(--muted-foreground)] text-center">
-              Lead capture from the public forms (conversion wizard &amp; quote requests) will flow here
-              automatically once the backend pipeline is connected.
+              ⚡ Real-time Supabase CRM: Leads submitted through the AI Concierge, Generator Conversion Wizard, SmartFix Fuel, and Quote forms appear here instantly.
             </p>
           </div>
         )}
@@ -638,54 +738,112 @@ export default function Admin({ onSignOut }: { onSignOut?: () => void }) {
                     <tr className="text-left text-xs uppercase tracking-wider text-[var(--muted-foreground)] border-b border-[var(--border)]">
                       <th className="px-4 py-3 font-medium">Project ID</th>
                       <th className="px-4 py-3 font-medium">Customer / Facility</th>
-                      <th className="px-4 py-3 font-medium">Equipment</th>
-                      <th className="px-4 py-3 font-medium">Status</th>
-                      <th className="px-4 py-3 font-medium">Materials Pack</th>
+                      <th className="px-4 py-3 font-medium">Contact &amp; Location</th>
+                      <th className="px-4 py-3 font-medium">Equipment / Scope</th>
+                      <th className="px-4 py-3 font-medium">Workflow Stage</th>
+                      <th className="px-4 py-3 font-medium">BOM Materials</th>
                       <th className="px-4 py-3 font-medium">Field Lead</th>
+                      <th className="px-4 py-3 font-medium text-right">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {[
-                      {
-                        id: "SFE-GEN-LAG-00231",
-                        customer: "ABC Manufacturing (Ikeja)",
-                        equipment: "3 × 500 kVA Perkins Diesel",
-                        status: "Engineering Review",
-                        materials: "12/12 Allocated (0 Variance)",
-                        lead: "Engr. Tunde A.",
-                      },
-                      {
-                        id: "SFE-FLT-VIC-00109",
-                        customer: "TransCorp Logistics (VI)",
-                        equipment: "25 × Toyota HiAce Petrol",
-                        status: "Site Readiness Pack",
-                        materials: "25/25 Tanks Staged",
-                        lead: "Engr. Michael O.",
-                      },
-                      {
-                        id: "SFE-HYB-LEK-00045",
-                        customer: "Grandview Estates (Lekki)",
-                        equipment: "Solar PV + 100kVA CNG Microgrid",
-                        status: "Site Assessment",
-                        materials: "In Transit to Site",
-                        lead: "Engr. Sarah D.",
-                      },
-                    ].map((p) => (
-                      <tr key={p.id} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
-                        <td className="px-4 py-3 font-mono font-semibold text-[var(--energy-green)] whitespace-nowrap">
-                          {p.id}
-                        </td>
-                        <td className="px-4 py-3 text-[var(--electric)] font-medium whitespace-nowrap">{p.customer}</td>
-                        <td className="px-4 py-3 text-[var(--muted-foreground)] whitespace-nowrap">{p.equipment}</td>
-                        <td className="px-4 py-3">
-                          <span className="text-xs px-2.5 py-1 rounded-full bg-[var(--cng-blue)]/15 text-[var(--cng-blue)] font-medium">
-                            {p.status}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-xs text-[var(--electric)] whitespace-nowrap">{p.materials}</td>
-                        <td className="px-4 py-3 text-xs text-[var(--muted-foreground)] whitespace-nowrap">{p.lead}</td>
-                      </tr>
-                    ))}
+                    {liveProjects.map((p) => {
+                      const cleanPhone = p.phone ? p.phone.replace(/[^0-9]/g, "").replace(/^0/, "") : "";
+                      return (
+                        <tr key={p.id} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
+                          <td className="px-4 py-3 whitespace-nowrap">
+                            <span className="font-mono font-semibold text-[var(--energy-green)] px-2.5 py-1 rounded-md bg-[var(--energy-green)]/10 border border-[var(--energy-green)]/20 text-xs">
+                              {p.id}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap">
+                            <div className="text-[var(--electric)] font-medium">{p.customer}</div>
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap text-xs text-[var(--muted-foreground)]">
+                            <div className="flex items-center gap-1.5">
+                              <MapPin className="w-3.5 h-3.5 text-[var(--cng-blue)]" />
+                              <span>{p.location || "Lagos, Nigeria"}</span>
+                            </div>
+                            <div className="flex items-center gap-1.5 mt-0.5 font-mono text-[11px]">
+                              <Phone className="w-3 h-3 text-[var(--energy-green)]" />
+                              <span>{p.phone}</span>
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 text-[var(--muted-foreground)] text-xs max-w-[220px] truncate" title={p.equipment}>
+                            {p.equipment}
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap">
+                            {p.rawLeadId ? (
+                              <select
+                                aria-label={`Project stage for ${p.id}`}
+                                value={p.leadStatus}
+                                onChange={(e) => updateLeadStatus(p.rawLeadId!, e.target.value as LeadStatus)}
+                                className={`text-xs px-2.5 py-1 rounded-full border-0 focus:outline-none cursor-pointer font-medium ${
+                                  p.leadStatus === "Hot"
+                                    ? "bg-[rgba(0,217,127,0.15)] text-[var(--energy-green)]"
+                                    : p.leadStatus === "Qualified"
+                                    ? "bg-[rgba(0,168,255,0.15)] text-[var(--cng-blue)]"
+                                    : "bg-[rgba(138,138,142,0.18)] text-[var(--silver)]"
+                                }`}
+                              >
+                                <option value="Hot" className="bg-[var(--graphite)] text-[var(--energy-green)]">Engineering Review</option>
+                                <option value="Qualified" className="bg-[var(--graphite)] text-[var(--cng-blue)]">Site Readiness Pack</option>
+                                <option value="Information" className="bg-[var(--graphite)] text-[var(--silver)]">Initial Discovery</option>
+                              </select>
+                            ) : (
+                              <span className="text-xs px-2.5 py-1 rounded-full bg-[var(--cng-blue)]/15 text-[var(--cng-blue)] font-medium">
+                                {p.status}
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 text-xs text-[var(--electric)] whitespace-nowrap">
+                            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-white/5 text-[11px]">
+                              <PackageCheck className="w-3.5 h-3.5 text-[var(--energy-green)]" />
+                              {p.materials}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-xs text-[var(--muted-foreground)] whitespace-nowrap">{p.lead}</td>
+                          <td className="px-4 py-3 text-right whitespace-nowrap">
+                            <div className="flex items-center justify-end gap-1.5">
+                              {cleanPhone && (
+                                <a
+                                  href={`https://wa.me/234${cleanPhone}?text=${encodeURIComponent(
+                                    `Hello ${p.customer}, reaching out from SmartFix Energy regarding your Project Pack ${p.id} (${p.equipment}).`
+                                  )}`}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="press-scale w-8 h-8 rounded-lg glass-panel text-[var(--energy-green)] hover:bg-[var(--energy-green)]/20 inline-flex items-center justify-center transition-colors"
+                                  title="Chat on WhatsApp"
+                                  aria-label="WhatsApp Client"
+                                >
+                                  <MessageSquare className="w-4 h-4" />
+                                </a>
+                              )}
+                              {p.phone && (
+                                <a
+                                  href={`tel:${p.phone}`}
+                                  className="press-scale w-8 h-8 rounded-lg glass-panel text-[var(--cng-blue)] hover:bg-[var(--cng-blue)]/20 inline-flex items-center justify-center transition-colors"
+                                  title="Call Client"
+                                  aria-label="Call Client"
+                                >
+                                  <Phone className="w-4 h-4" />
+                                </a>
+                              )}
+                              {p.rawLeadId && (
+                                <button
+                                  onClick={() => removeLead(p.rawLeadId!)}
+                                  className="press-scale w-8 h-8 rounded-lg glass-panel text-[var(--muted-foreground)] hover:text-red-400 inline-flex items-center justify-center transition-colors"
+                                  title="Archive Project"
+                                  aria-label="Archive Project"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>

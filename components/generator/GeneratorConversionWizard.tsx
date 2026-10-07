@@ -154,7 +154,7 @@ export default function GeneratorConversionWizard() {
         email: `${phone.replace(/\s+/g, "")}@smartfixenergy.com`,
         phone,
         company: company || "Direct Facility Client",
-        service: `GENERATOR CONVERSION: ${pack.equipment}`,
+        service: `[${projectId}] GENERATOR CONVERSION: ${pack.equipment}`,
         location,
         budget: monthlySpend,
         value: 8500000,

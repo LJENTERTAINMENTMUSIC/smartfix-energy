@@ -60,19 +60,40 @@ export default function QuoteForm() {
       toast.error("Please enter your name and phone number");
       return;
     }
+    const projectId = "SFE-QTE-" + Math.floor(1000 + Math.random() * 9000);
+    const servicesList = selected.join(", ");
+    const pack = {
+      id: projectId,
+      customer: name,
+      company: company || "Direct Customer",
+      equipment: `Quote Intake: ${servicesList}`,
+      location: `${city || state || "Lagos"}, ${state || "Nigeria"}`,
+      phone,
+      objective: `Custom energy quote for ${company || name}: ${servicesList}`,
+      status: "Engineering Review",
+      nextStep: "Technical Consultation & Commercial Proposal Preparation",
+      materialsStatus: "Requirements Scoping in Progress",
+      createdAt: new Date().toISOString(),
+    };
+
     try {
+      const existing = JSON.parse(localStorage.getItem("smartfix_projects") || "[]");
+      existing.unshift(pack);
+      localStorage.setItem("smartfix_projects", JSON.stringify(existing));
+      localStorage.setItem("smartfix_latest_project", JSON.stringify(pack));
+
       await catalog.addLead({
         name,
         email: email || `${phone.replace(/\s+/g, "")}@smartfixenergy.com`,
         phone,
         company: company || "Direct Customer",
-        service: selected.join(", "),
+        service: `[${projectId}] ${servicesList}`,
         location: `${city || state || "Lagos"}, ${state || "Nigeria"}`,
         budget: budget || "Custom Quote",
         value: 1500000,
         status: "Hot",
       });
-      toast.success("Quote request submitted successfully!");
+      toast.success(`Quote Project ${projectId} submitted successfully!`);
     } catch (err) {
       console.error("Failed to add lead:", err);
     }

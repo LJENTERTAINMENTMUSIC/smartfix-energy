@@ -151,7 +151,7 @@ export default function SmartFixConciergeModal({
         email: `${phone.replace(/\s+/g, "")}@smartfixenergy.com`,
         phone,
         company: company || "Direct Customer",
-        service: equipmentName || "Complete Energy Project",
+        service: `[${projectId}] ${equipmentName || "Complete Energy Project"}`,
         location,
         budget: "Custom Energy Project Pack",
         value: 4500000,

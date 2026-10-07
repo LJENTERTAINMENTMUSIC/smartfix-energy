@@ -70,19 +70,40 @@ export default function ConversionWizard() {
       toast.error("Please provide your name and phone number");
       return;
     }
+    const projectId = "SFE-VEH-" + Math.floor(1000 + Math.random() * 9000);
+    const vehicleDesc = [data.brand, data.model, data.year, data.engine].filter(Boolean).join(" ") || "Vehicle";
+    const pack = {
+      id: projectId,
+      customer: data.name,
+      company: data.brand ? `${data.brand} ${data.model || ""} (${data.year || ""})` : "Vehicle Owner",
+      equipment: `CNG Conversion: ${vehicleDesc}`,
+      location: `${data.city || data.state}, ${data.state || "Nigeria"}`,
+      phone: data.phone,
+      objective: "Petrol-to-CNG Vehicle Dual-Fuel Conversion & Tank Mounting",
+      status: "Engineering Review",
+      nextStep: "Vehicle Inspection & Bay Sizing Scheduled",
+      materialsStatus: "Sequential Gas Injection Kit & ECU Allocated",
+      createdAt: new Date().toISOString(),
+    };
+
     try {
+      const existing = JSON.parse(localStorage.getItem("smartfix_projects") || "[]");
+      existing.unshift(pack);
+      localStorage.setItem("smartfix_projects", JSON.stringify(existing));
+      localStorage.setItem("smartfix_latest_project", JSON.stringify(pack));
+
       await catalog.addLead({
         name: data.name,
         email: data.email || `${data.phone.replace(/\s+/g, "")}@cng.smartfixenergy.com`,
         phone: data.phone,
         company: data.brand ? `${data.brand} ${data.model || ""} (${data.year || ""})` : "Vehicle Owner",
-        service: "CNG Vehicle Conversion",
+        service: `[${projectId}] CNG Vehicle Conversion: ${vehicleDesc}`,
         location: `${data.city || data.state}, ${data.state || "Nigeria"}`,
         budget: data.fuelSpend ? `₦${data.fuelSpend}/month fuel spend` : "Standard",
         value: 1250000,
         status: "Hot",
       });
-      toast.success("Assessment request received! A specialist will contact you.");
+      toast.success(`Project ${projectId} created! A conversion specialist will contact you.`);
     } catch (err) {
       console.error("Failed to save lead:", err);
     }

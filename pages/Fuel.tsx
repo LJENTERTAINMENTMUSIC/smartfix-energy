@@ -73,19 +73,39 @@ export default function FuelPage() {
       return;
     }
 
+    const projectId = "SFE-FUL-" + Math.floor(1000 + Math.random() * 9000);
+    const pack = {
+      id: projectId,
+      customer: name,
+      company: company || "Direct Facility Client",
+      equipment: `Bulk Fuel Supply: ${fuelType} (${volume})`,
+      location,
+      phone,
+      objective: `Procurement & recurring supply: ${fuelType} at ${volume}`,
+      status: "Engineering Review",
+      nextStep: "Fuel Logistics Route Scheduling & Dispatch Confirmation",
+      materialsStatus: "Tanker & Logistics Allocation Pending",
+      createdAt: new Date().toISOString(),
+    };
+
     try {
+      const existing = JSON.parse(localStorage.getItem("smartfix_projects") || "[]");
+      existing.unshift(pack);
+      localStorage.setItem("smartfix_projects", JSON.stringify(existing));
+      localStorage.setItem("smartfix_latest_project", JSON.stringify(pack));
+
       await catalog.addLead({
         name,
         email: `${phone.replace(/\s+/g, "")}@smartfixenergy.com`,
         phone,
         company: company || "Direct Facility Client",
-        service: `SMARTFIX FUEL: ${fuelType} (${volume})`,
+        service: `[${projectId}] SMARTFIX FUEL: ${fuelType} (${volume})`,
         location,
         budget: "Bulk Fuel Supply Contract",
         value: 12000000,
         status: "Hot",
       });
-      toast.success("Fuel supply opportunity created! An energy procurement specialist will call you.");
+      toast.success(`Fuel project ${projectId} created! Dispatch will contact you.`);
       setSubmitted(true);
     } catch (err) {
       console.error(err);
