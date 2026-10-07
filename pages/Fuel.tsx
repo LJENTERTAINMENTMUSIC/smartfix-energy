@@ -16,6 +16,7 @@ import {
 import { catalog } from "@/lib/catalog";
 import { toast } from "sonner";
 import { SMARTFIX_CONTACT } from "@/lib/contact";
+import { pricingStore, PRICE_CODES, usePricing } from "@/lib/pricingStore";
 
 const FUEL_SERVICES = [
   {
@@ -148,6 +149,45 @@ export default function FuelPage() {
               <PhoneCall className="w-4 h-4 text-[var(--energy-green)]" />
               Direct Fuel Desk: 0813 978 4331
             </a>
+          </div>
+
+          {/* Official Admin-Approved Live Fuel Rates Ticker */}
+          <div className="mt-10 max-w-2xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <div className="p-4 rounded-2xl glass-card border border-[#ff9f0a]/30 bg-[#ff9f0a]/5 text-left flex items-center justify-between">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="w-2 h-2 rounded-full bg-[#ff9f0a] animate-pulse" />
+                  <span className="text-[11px] font-mono uppercase font-bold text-[#ff9f0a] tracking-wider">
+                    CERTIFIED AGO DIESEL
+                  </span>
+                </div>
+                <div className="text-xs text-[var(--muted-foreground)]">Bulk Metered Delivery</div>
+              </div>
+              <div className="text-right">
+                <div className="font-mono font-bold text-xl sm:text-2xl text-[var(--electric)]">
+                  ₦{(pricingStore.getPriceValue(PRICE_CODES.AGO_DIESEL_PER_LITRE) || 1250).toLocaleString()}
+                </div>
+                <div className="text-[10px] font-mono text-[var(--muted-foreground)]">PER LITRE</div>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-2xl glass-card border border-[var(--cng-blue)]/30 bg-[var(--cng-blue)]/5 text-left flex items-center justify-between">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="w-2 h-2 rounded-full bg-[var(--cng-blue)] animate-pulse" />
+                  <span className="text-[11px] font-mono uppercase font-bold text-[var(--cng-blue)] tracking-wider">
+                    VIRTUAL PIPELINE CNG
+                  </span>
+                </div>
+                <div className="text-xs text-[var(--muted-foreground)]">200-Bar Mobile Gas Skid</div>
+              </div>
+              <div className="text-right">
+                <div className="font-mono font-bold text-xl sm:text-2xl text-[var(--electric)]">
+                  ₦{(pricingStore.getPriceValue(PRICE_CODES.CNG_PER_SCM) || 1150).toLocaleString()}
+                </div>
+                <div className="text-[10px] font-mono text-[var(--muted-foreground)]">PER SCM</div>
+              </div>
+            </div>
           </div>
         </div>
 

@@ -16,6 +16,7 @@
 import { portalStorage, type CustomerProfile, type PortalProject, type PortalOrder, type CustomerAsset, type PortalInvoice } from "./portalData";
 import { formatNaira } from "./catalog";
 import { SMARTFIX_CONTACT } from "./contact";
+import { pricingStore, PRICE_CODES } from "./pricingStore";
 
 /* ------------------------------------------------------------------ */
 /* 1. TYPES & SCHEMAS                                                 */
@@ -918,20 +919,22 @@ export class SmartFixKnowledgeEngine {
         internalTask = { id: `TSK-${Date.now().toString().slice(-4)}`, title: `Project Scoping Request for ${profile.company}`, assignedDepartment: "Engineering" };
       }
     } else if (category === "FUEL") {
+      const dieselRate = pricingStore.getPriceValue(PRICE_CODES.AGO_DIESEL_PER_LITRE) || 1250;
+      const cngRate = pricingStore.getPriceValue(PRICE_CODES.CNG_PER_SCM) || 1150;
       const activeOrder = orders.find((o) => o.status === "ON THE WAY" || o.status === "CONFIRMED");
       if (qLower.includes("where") || qLower.includes("status") || qLower.includes("tracking")) {
         if (activeOrder) {
           answer = `Your order ${activeOrder.id} for ${activeOrder.quantity} of ${activeOrder.type} is "${activeOrder.status}". Dedicated tanker ${activeOrder.tankerReg || "LAG-782-KT"} is en route with Driver ${activeOrder.driverName || "Suleiman B."}. Expected arrival: ${activeOrder.estimatedArrival || "today"}.`;
           confidenceScore = 99;
         } else {
-          answer = `You currently have no active tankers in transit for ${profile.company}. You can place a spot dispatch order or activate recurring replenishment anytime from your Fuel Logistics tab at standard approved rate of ₦1,250/L for AGO Diesel.`;
+          answer = `You currently have no active tankers in transit for ${profile.company}. You can place a spot dispatch order or activate recurring replenishment anytime from your Fuel Logistics tab at standard approved rate of ₦${dieselRate.toLocaleString()}/L for AGO Diesel.`;
           confidenceScore = 94;
         }
       } else if (qLower.includes("price") || qLower.includes("cost") || qLower.includes("how much")) {
-        answer = `SmartFix official approved fuel rates: Certified Automotive Gas Oil (AGO Diesel) is ₦1,250 per litre (metered delivery included). Virtual Pipeline CNG is ₦1,150 per SCM. Deliveries are metered with digital certification.`;
+        answer = `SmartFix official approved fuel rates: Certified Automotive Gas Oil (AGO Diesel) is ₦${dieselRate.toLocaleString()} per litre (metered delivery included). Virtual Pipeline CNG is ₦${cngRate.toLocaleString()} per SCM. Deliveries are metered with digital certification.`;
         confidenceScore = 99;
       } else {
-        answer = `SmartFix Fuel supplies bulk AGO diesel (₦1,250/L) and 200-bar virtual pipeline CNG skids directly to ${profile.company}'s facility. You can schedule spot deliveries or automated bi-weekly cycles in your Fuel Desk.`;
+        answer = `SmartFix Fuel supplies bulk AGO diesel (₦${dieselRate.toLocaleString()}/L) and 200-bar virtual pipeline CNG skids directly to ${profile.company}'s facility. You can schedule spot deliveries or automated bi-weekly cycles in your Fuel Desk.`;
         confidenceScore = 95;
       }
     } else if (category === "INVOICE" || category === "PAYMENT") {

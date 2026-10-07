@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Check, ChevronRight, ChevronLeft, Car, User, Fuel, MapPin, Phone } from "lucide-react";
 import { toast } from "sonner";
 import { catalog } from "@/lib/catalog";
+import { pricingStore, PRICE_CODES } from "@/lib/pricingStore";
 
 const vehicleBrands = ["Toyota", "Honda", "Hyundai", "Kia", "Mercedes", "Lexus", "Nissan", "Peugeot", "Ford", "Other"];
 const usageTypes = ["Personal", "Ride-hailing", "Commercial transport", "Logistics", "Corporate fleet", "Government", "Other"];
@@ -101,7 +102,7 @@ export default function ConversionWizard() {
         service: `[${projectId}] CNG Vehicle Conversion: ${vehicleDesc}`,
         location: `${data.city || data.state}, ${data.state || "Nigeria"}`,
         budget: data.fuelSpend ? `₦${data.fuelSpend}/month fuel spend` : "Standard",
-        value: 1250000,
+        value: pricingStore.getPriceValue(PRICE_CODES.CNG_VEHICLE_CONVERSION_BASE) || 850000,
         status: "Hot",
       });
       toast.success(`Project ${projectId} created! A conversion specialist will contact you.`);

@@ -14,6 +14,7 @@ import {
 import { portalStorage, type CustomerProfile, type PortalOrder, type RecurringSupply } from "@/lib/portalData";
 import { toast } from "sonner";
 import { formatNaira } from "@/lib/catalog";
+import { pricingStore, PRICE_CODES } from "@/lib/pricingStore";
 
 interface OrderFuelModalProps {
   isOpen: boolean;
@@ -22,8 +23,9 @@ interface OrderFuelModalProps {
   onOrderPlaced: (order: PortalOrder) => void;
 }
 
-const DIESEL_PRICE_PER_LITRE = 1250;
-const CNG_PRICE_PER_SCM = 1150;
+/* Prices are now read LIVE from the admin-controlled pricing store */
+const getDieselPrice = () => pricingStore.getPriceValue(PRICE_CODES.AGO_DIESEL_PER_LITRE) || 1250;
+const getCngPrice = () => pricingStore.getPriceValue(PRICE_CODES.CNG_PER_SCM) || 1150;
 
 export default function OrderFuelModal({
   isOpen,
@@ -44,7 +46,7 @@ export default function OrderFuelModal({
 
   if (!isOpen) return null;
 
-  const unitPrice = fuelType === "Diesel (AGO)" ? DIESEL_PRICE_PER_LITRE : CNG_PRICE_PER_SCM;
+  const unitPrice = fuelType === "Diesel (AGO)" ? getDieselPrice() : getCngPrice();
   const unitLabel = fuelType === "Diesel (AGO)" ? "Litres" : "SCM (Standard Cubic Metres)";
   const totalPrice = quantity * unitPrice;
   const selectedSite = profile.sites.find((s) => s.id === selectedSiteId) || profile.sites[0];
@@ -153,7 +155,7 @@ export default function OrderFuelModal({
                       <Fuel className="w-4 h-4 text-[#ff9f0a]" />
                     </div>
                     <p className="text-xs text-[var(--muted-foreground)]">
-                      Standard certified AGO · ₦{DIESEL_PRICE_PER_LITRE.toLocaleString()}/L
+                      Standard certified AGO · ₦{getDieselPrice().toLocaleString()}/L
                     </p>
                   </button>
 
@@ -174,7 +176,7 @@ export default function OrderFuelModal({
                       <Fuel className="w-4 h-4 text-[var(--cng-blue)]" />
                     </div>
                     <p className="text-xs text-[var(--muted-foreground)]">
-                      200-Bar Gas Skid · ₦{CNG_PRICE_PER_SCM.toLocaleString()}/SCM
+                      200-Bar Gas Skid · ₦{getCngPrice().toLocaleString()}/SCM
                     </p>
                   </button>
                 </div>

@@ -5,7 +5,7 @@ import {
   Cpu, ShieldCheck, Truck, PackageCheck, FileText, CheckCircle2,
   Phone, MessageSquare, ExternalLink, MapPin, Sparkles, Mail,
   BookOpen, ThumbsUp, ThumbsDown, Play, ArrowRight, History, Search,
-  Award, AlertTriangle,
+  Award, AlertTriangle, DollarSign, Clock, ToggleLeft, ToggleRight,
 } from "lucide-react";
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid,
@@ -29,10 +29,15 @@ import {
   type HierarchyLevel,
   type RiskLevel,
 } from "@shared/smartfixKnowledgeEngine";
+import {
+  pricingStore, usePricing, PRICE_CODES,
+  formatPriceWithUnit, formatPriceCategory,
+  type PriceItem, type PriceCategory, type PriceUnit, type PriceChange,
+} from "@shared/pricingStore";
 
 /* ------------------------------------------------------------------ */
 
-type Tab = "overview" | "products" | "sales" | "workforce" | "knowledge" | "learning";
+type Tab = "overview" | "products" | "sales" | "workforce" | "knowledge" | "learning" | "pricing";
 
 const inputCls =
   "w-full rounded-lg bg-[var(--graphite)] border border-[var(--border)] px-3 py-2 text-sm text-[var(--electric)] placeholder:text-[var(--muted-foreground)] focus:outline-none focus:border-[var(--energy-green)] focus:ring-2 focus:ring-[rgba(0,217,127,0.15)] transition-all [color-scheme:dark]";
@@ -632,6 +637,21 @@ export default function Admin({ onSignOut }: { onSignOut?: () => void }) {
   const [evalTestRunResults, setEvalTestRunResults] = useState<{ id: string; passed: boolean; latency: number; reason: string }[] | null>(null);
   const [runningEval, setRunningEval] = useState(false);
 
+  /* ---- Pricing Control Center states ---- */
+  const pricingState = usePricing();
+  const [priceCategoryFilter, setPriceCategoryFilter] = useState<string>("ALL");
+  const [editingPrice, setEditingPrice] = useState<PriceItem | null>(null);
+  const [priceEditOpen, setPriceEditOpen] = useState(false);
+  const [priceForm, setPriceForm] = useState<Partial<PriceItem>>({});
+  const [priceChangeReason, setPriceChangeReason] = useState("");
+  const [showChangeLog, setShowChangeLog] = useState(false);
+  const [addPriceOpen, setAddPriceOpen] = useState(false);
+  const [newPriceForm, setNewPriceForm] = useState<Partial<PriceItem>>({
+    name: "", description: "", category: "CUSTOM" as PriceCategory, basePrice: 0,
+    unit: "Unit" as PriceUnit, code: "", isActive: true, effectiveDate: new Date().toISOString().slice(0, 10),
+    lastUpdatedBy: "Admin", notes: "",
+  });
+
   const refreshKnowledge = () => {
     setKnowledgeList([...knowledgeEngine.getAllKnowledge()]);
     setCandidateList([...knowledgeEngine.getCandidates()]);
@@ -801,6 +821,7 @@ export default function Admin({ onSignOut }: { onSignOut?: () => void }) {
     { id: "workforce", label: "AI Workforce & Projects", icon: Cpu },
     { id: "knowledge", label: "Knowledge Studio", icon: BookOpen },
     { id: "learning", label: "AI Governance & Learning", icon: Sparkles },
+    { id: "pricing", label: "Pricing Control", icon: DollarSign },
   ];
 
   return (
@@ -2132,6 +2153,533 @@ export default function Admin({ onSignOut }: { onSignOut?: () => void }) {
                     </ul>
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ---------------- PRICING CONTROL CENTER ---------------- */}
+        {tab === "pricing" && (
+          <div className="space-y-6">
+            {/* KPI Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <Kpi
+                icon={DollarSign}
+                label="Active Price Items"
+                value={String(pricingState.prices.filter((p) => p.isActive).length)}
+                sub={`${pricingState.prices.length} total configured`}
+                accent="var(--energy-green)"
+              />
+              <Kpi
+                icon={Tag}
+                label="AGO Diesel Rate"
+                value={`₦${(pricingStore.getPriceValue(PRICE_CODES.AGO_DIESEL_PER_LITRE) || 0).toLocaleString()}/L`}
+                sub="Per litre (admin-controlled)"
+                accent="#ff9f0a"
+              />
+              <Kpi
+                icon={Flame}
+                label="CNG Rate"
+                value={`₦${(pricingStore.getPriceValue(PRICE_CODES.CNG_PER_SCM) || 0).toLocaleString()}/SCM`}
+                sub="Per SCM (admin-controlled)"
+                accent="var(--cng-blue)"
+              />
+              <Kpi
+                icon={History}
+                label="Price Changes"
+                value={String(pricingState.changeLog.length)}
+                sub={pricingState.lastSynced ? `Last sync: ${new Date(pricingState.lastSynced).toLocaleTimeString()}` : "Not synced"}
+                accent="#8a8a8e"
+              />
+            </div>
+
+            {/* Controls Bar */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div className="flex flex-wrap gap-2">
+                {["ALL", "FUEL", "CNG_CONVERSION", "GENERATOR_CONVERSION", "SERVICE", "SOLAR", "FLEET", "LOGISTICS", "CUSTOM"].map(
+                  (cat) => (
+                    <button
+                      key={cat}
+                      onClick={() => setPriceCategoryFilter(cat)}
+                      className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+                        priceCategoryFilter === cat
+                          ? "bg-[var(--energy-green)] text-[var(--obsidian)] border-[var(--energy-green)]"
+                          : "glass-panel border-white/10 text-[var(--muted-foreground)] hover:text-white"
+                      }`}
+                    >
+                      {cat === "ALL" ? "All Categories" : formatPriceCategory(cat as PriceCategory)}
+                    </button>
+                  )
+                )}
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setShowChangeLog(!showChangeLog)}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-medium glass-panel border border-white/10 text-[var(--muted-foreground)] hover:text-white"
+                >
+                  <History className="w-3.5 h-3.5" /> {showChangeLog ? "Hide Log" : "Change Log"}
+                </button>
+                <button
+                  onClick={() => setAddPriceOpen(true)}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold bg-[var(--energy-green)] text-[var(--obsidian)]"
+                >
+                  <Plus className="w-3.5 h-3.5" /> Add Price
+                </button>
+              </div>
+            </div>
+
+            {/* Price Change Log (collapsible) */}
+            {showChangeLog && pricingState.changeLog.length > 0 && (
+              <div className="glass-card p-5 space-y-3">
+                <h4 className="font-display font-semibold text-sm text-[var(--electric)] flex items-center gap-2">
+                  <History className="w-4 h-4 text-[var(--cng-blue)]" /> Price Change Audit Log
+                </h4>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="text-left text-[var(--muted-foreground)] border-b border-white/5">
+                        <th className="pb-2 pr-4">Item</th>
+                        <th className="pb-2 pr-4">Previous</th>
+                        <th className="pb-2 pr-4">New</th>
+                        <th className="pb-2 pr-4">Changed By</th>
+                        <th className="pb-2 pr-4">Reason</th>
+                        <th className="pb-2">Date</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {pricingState.changeLog.slice(0, 20).map((ch) => (
+                        <tr key={ch.id} className="border-b border-white/[0.03] text-[var(--electric)]">
+                          <td className="py-2 pr-4 font-medium">{ch.priceItemName}</td>
+                          <td className="py-2 pr-4 font-mono text-red-400">₦{ch.previousPrice.toLocaleString()}</td>
+                          <td className="py-2 pr-4 font-mono text-[var(--energy-green)]">₦{ch.newPrice.toLocaleString()}</td>
+                          <td className="py-2 pr-4">{ch.changedBy}</td>
+                          <td className="py-2 pr-4 text-[var(--muted-foreground)]">{ch.reason}</td>
+                          <td className="py-2 font-mono text-[var(--muted-foreground)]">
+                            {new Date(ch.changedAt).toLocaleDateString()}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* Price Items Table */}
+            <div className="glass-card overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs">
+                  <thead>
+                    <tr className="text-left text-[var(--muted-foreground)] border-b border-white/10 bg-white/[0.02]">
+                      <th className="px-4 py-3">Code</th>
+                      <th className="px-4 py-3">Name</th>
+                      <th className="px-4 py-3">Category</th>
+                      <th className="px-4 py-3">Price</th>
+                      <th className="px-4 py-3">Unit</th>
+                      <th className="px-4 py-3">Min Qty</th>
+                      <th className="px-4 py-3">Bulk Discount</th>
+                      <th className="px-4 py-3">Status</th>
+                      <th className="px-4 py-3">Last Updated</th>
+                      <th className="px-4 py-3">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pricingState.prices
+                      .filter((p) => priceCategoryFilter === "ALL" || p.category === priceCategoryFilter)
+                      .map((item) => (
+                        <tr
+                          key={item.id}
+                          className={`border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors ${
+                            !item.isActive ? "opacity-40" : ""
+                          }`}
+                        >
+                          <td className="px-4 py-3 font-mono text-[10px] text-[var(--cng-blue)]">{item.code}</td>
+                          <td className="px-4 py-3">
+                            <div className="font-semibold text-[var(--electric)]">{item.name}</div>
+                            <div className="text-[10px] text-[var(--muted-foreground)] max-w-[200px] truncate">
+                              {item.description}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 text-[var(--muted-foreground)]">
+                            {formatPriceCategory(item.category)}
+                          </td>
+                          <td className="px-4 py-3 font-mono font-bold text-[var(--energy-green)] text-sm">
+                            ₦{item.basePrice.toLocaleString()}
+                          </td>
+                          <td className="px-4 py-3 text-[var(--muted-foreground)]">/{item.unit}</td>
+                          <td className="px-4 py-3 font-mono text-[var(--muted-foreground)]">
+                            {item.minQuantity ? item.minQuantity.toLocaleString() : "—"}
+                          </td>
+                          <td className="px-4 py-3 text-[var(--muted-foreground)]">
+                            {item.bulkDiscountPercent ? `${item.bulkDiscountPercent}% above ${(item.bulkThreshold || 0).toLocaleString()}` : "—"}
+                          </td>
+                          <td className="px-4 py-3">
+                            <span
+                              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                                item.isActive
+                                  ? "bg-[var(--energy-green)]/15 text-[var(--energy-green)]"
+                                  : "bg-red-500/15 text-red-400"
+                              }`}
+                            >
+                              {item.isActive ? "ACTIVE" : "INACTIVE"}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-[10px] text-[var(--muted-foreground)]">
+                            {item.lastUpdatedBy}
+                            <br />
+                            {new Date(item.lastUpdatedAt).toLocaleDateString()}
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-1.5">
+                              <button
+                                onClick={() => {
+                                  setEditingPrice(item);
+                                  setPriceForm({ ...item });
+                                  setPriceChangeReason("");
+                                  setPriceEditOpen(true);
+                                }}
+                                className="w-7 h-7 rounded-lg glass-panel flex items-center justify-center text-[var(--muted-foreground)] hover:text-[var(--energy-green)] transition-colors"
+                                title="Edit Price"
+                              >
+                                <Pencil className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={() => {
+                                  pricingStore.toggleActive(item.id, "Admin");
+                                  toast.success(
+                                    `${item.name} ${item.isActive ? "deactivated" : "reactivated"}`
+                                  );
+                                }}
+                                className="w-7 h-7 rounded-lg glass-panel flex items-center justify-center text-[var(--muted-foreground)] hover:text-amber-400 transition-colors"
+                                title={item.isActive ? "Deactivate" : "Reactivate"}
+                              >
+                                {item.isActive ? (
+                                  <ToggleRight className="w-3.5 h-3.5" />
+                                ) : (
+                                  <ToggleLeft className="w-3.5 h-3.5" />
+                                )}
+                              </button>
+                              <button
+                                onClick={() => {
+                                  if (confirm(`Delete price "${item.name}"? This cannot be undone.`)) {
+                                    pricingStore.deletePrice(item.id);
+                                    toast.success(`Deleted "${item.name}"`);
+                                  }
+                                }}
+                                className="w-7 h-7 rounded-lg glass-panel flex items-center justify-center text-[var(--muted-foreground)] hover:text-red-400 transition-colors"
+                                title="Delete"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Important Notice */}
+            <div className="glass-card p-4 border-l-4 border-[#ff9f0a] flex items-start gap-3">
+              <AlertTriangle className="w-5 h-5 text-[#ff9f0a] shrink-0 mt-0.5" />
+              <div>
+                <h4 className="font-semibold text-sm text-[var(--electric)] mb-1">
+                  Admin Price Authority
+                </h4>
+                <p className="text-xs text-[var(--muted-foreground)]">
+                  All prices set here are the <strong>single source of truth</strong> across the entire SmartFix
+                  platform. When you update a price, it instantly propagates to: the Customer Portal fuel ordering desk,
+                  the AI Copilot (customers asking about prices will receive the new rate), public quote forms, and all
+                  automated invoicing. The Knowledge Engine will{" "}
+                  <strong>never invent or hallucinate prices</strong> — it always reads from this
+                  admin-controlled pricing store.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ========== PRICE EDIT MODAL ========== */}
+        {priceEditOpen && editingPrice && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-black/75 backdrop-blur-sm" onClick={() => setPriceEditOpen(false)} />
+            <div className="relative z-10 w-full max-w-lg glass-card p-6 md:p-8">
+              <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center gap-2">
+                  <DollarSign className="w-5 h-5 text-[var(--energy-green)]" />
+                  <h3 className="font-display font-bold text-lg text-[var(--electric)]">Update Price</h3>
+                </div>
+                <button
+                  onClick={() => setPriceEditOpen(false)}
+                  className="w-8 h-8 rounded-full glass-panel flex items-center justify-center text-[var(--muted-foreground)] hover:text-white"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div className="p-3 rounded-xl glass-panel border border-white/10">
+                  <div className="text-xs text-[var(--muted-foreground)] mb-1">Editing</div>
+                  <div className="font-semibold text-sm text-[var(--electric)]">{editingPrice.name}</div>
+                  <div className="text-[10px] font-mono text-[var(--cng-blue)]">{editingPrice.code}</div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className={labelCls}>Current Price</label>
+                    <div className="px-3 py-2.5 rounded-lg bg-white/[0.03] border border-white/10 font-mono text-sm text-red-400 line-through">
+                      ₦{editingPrice.basePrice.toLocaleString()} / {editingPrice.unit}
+                    </div>
+                  </div>
+                  <div>
+                    <label className={labelCls}>New Price (₦)</label>
+                    <input
+                      type="number"
+                      min={0}
+                      className={inputCls}
+                      value={priceForm.basePrice ?? ""}
+                      onChange={(e) => setPriceForm({ ...priceForm, basePrice: Number(e.target.value) })}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className={labelCls}>Min Quantity</label>
+                    <input
+                      type="number"
+                      min={0}
+                      className={inputCls}
+                      value={priceForm.minQuantity ?? ""}
+                      onChange={(e) => setPriceForm({ ...priceForm, minQuantity: e.target.value ? Number(e.target.value) : undefined })}
+                    />
+                  </div>
+                  <div>
+                    <label className={labelCls}>Bulk Discount (%)</label>
+                    <input
+                      type="number"
+                      min={0}
+                      max={100}
+                      className={inputCls}
+                      value={priceForm.bulkDiscountPercent ?? ""}
+                      onChange={(e) => setPriceForm({ ...priceForm, bulkDiscountPercent: e.target.value ? Number(e.target.value) : undefined })}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className={labelCls}>Description</label>
+                  <textarea
+                    className={inputCls + " h-16 resize-y"}
+                    value={priceForm.description ?? ""}
+                    onChange={(e) => setPriceForm({ ...priceForm, description: e.target.value })}
+                  />
+                </div>
+
+                <div>
+                  <label className={labelCls}>Notes</label>
+                  <input
+                    className={inputCls}
+                    value={priceForm.notes ?? ""}
+                    onChange={(e) => setPriceForm({ ...priceForm, notes: e.target.value })}
+                  />
+                </div>
+
+                <div>
+                  <label className={labelCls}>Reason for Price Change *</label>
+                  <input
+                    className={inputCls}
+                    value={priceChangeReason}
+                    onChange={(e) => setPriceChangeReason(e.target.value)}
+                    placeholder="e.g. Market adjustment, supplier cost change, promotional pricing..."
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 mt-6">
+                <button
+                  onClick={() => setPriceEditOpen(false)}
+                  className="px-4 py-2 rounded-full text-xs font-medium glass-panel border border-[var(--border)] text-[var(--muted-foreground)]"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    if (!priceChangeReason.trim()) {
+                      toast.error("Please provide a reason for the price change");
+                      return;
+                    }
+                    pricingStore.updatePrice(editingPrice.id, priceForm, "Admin", priceChangeReason);
+                    toast.success(`Price updated: ${editingPrice.name} → ₦${(priceForm.basePrice || 0).toLocaleString()}`);
+                    setPriceEditOpen(false);
+                  }}
+                  className="inline-flex items-center gap-1.5 px-5 py-2 rounded-full text-xs font-semibold bg-[var(--energy-green)] text-[var(--obsidian)]"
+                >
+                  <Check className="w-3.5 h-3.5" /> Confirm Price Update
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ========== ADD NEW PRICE MODAL ========== */}
+        {addPriceOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-black/75 backdrop-blur-sm" onClick={() => setAddPriceOpen(false)} />
+            <div className="relative z-10 w-full max-w-lg max-h-[90vh] overflow-y-auto glass-card p-6 md:p-8">
+              <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center gap-2">
+                  <Plus className="w-5 h-5 text-[var(--energy-green)]" />
+                  <h3 className="font-display font-bold text-lg text-[var(--electric)]">Add New Price Item</h3>
+                </div>
+                <button
+                  onClick={() => setAddPriceOpen(false)}
+                  className="w-8 h-8 rounded-full glass-panel flex items-center justify-center text-[var(--muted-foreground)] hover:text-white"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className={labelCls}>Price Code (unique identifier)</label>
+                  <input
+                    className={inputCls}
+                    value={newPriceForm.code ?? ""}
+                    onChange={(e) => setNewPriceForm({ ...newPriceForm, code: e.target.value.toUpperCase().replace(/\s/g, "_") })}
+                    placeholder="e.g. CUSTOM_SERVICE_FEE"
+                  />
+                </div>
+                <div>
+                  <label className={labelCls}>Name</label>
+                  <input
+                    className={inputCls}
+                    value={newPriceForm.name ?? ""}
+                    onChange={(e) => setNewPriceForm({ ...newPriceForm, name: e.target.value })}
+                    placeholder="e.g. Custom Fuel Testing Service"
+                  />
+                </div>
+                <div>
+                  <label className={labelCls}>Description</label>
+                  <textarea
+                    className={inputCls + " h-16 resize-y"}
+                    value={newPriceForm.description ?? ""}
+                    onChange={(e) => setNewPriceForm({ ...newPriceForm, description: e.target.value })}
+                    placeholder="What does this price cover?"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className={labelCls}>Category</label>
+                    <select
+                      className={inputCls}
+                      value={newPriceForm.category ?? "CUSTOM"}
+                      onChange={(e) => setNewPriceForm({ ...newPriceForm, category: e.target.value as PriceCategory })}
+                    >
+                      {["FUEL", "CNG_CONVERSION", "GENERATOR_CONVERSION", "SERVICE", "PARTS", "SOLAR", "FLEET", "LOGISTICS", "CUSTOM"].map(
+                        (cat) => (
+                          <option key={cat} value={cat}>
+                            {formatPriceCategory(cat as PriceCategory)}
+                          </option>
+                        )
+                      )}
+                    </select>
+                  </div>
+                  <div>
+                    <label className={labelCls}>Unit</label>
+                    <select
+                      className={inputCls}
+                      value={newPriceForm.unit ?? "Unit"}
+                      onChange={(e) => setNewPriceForm({ ...newPriceForm, unit: e.target.value as PriceUnit })}
+                    >
+                      {["Litre", "SCM", "kVA", "kWp", "Unit", "Vehicle", "Hour", "Visit", "Project", "Month", "Flat"].map(
+                        (u) => (
+                          <option key={u} value={u}>
+                            {u}
+                          </option>
+                        )
+                      )}
+                    </select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className={labelCls}>Base Price (₦)</label>
+                    <input
+                      type="number"
+                      min={0}
+                      className={inputCls}
+                      value={newPriceForm.basePrice ?? 0}
+                      onChange={(e) => setNewPriceForm({ ...newPriceForm, basePrice: Number(e.target.value) })}
+                    />
+                  </div>
+                  <div>
+                    <label className={labelCls}>Min Quantity</label>
+                    <input
+                      type="number"
+                      min={0}
+                      className={inputCls}
+                      value={newPriceForm.minQuantity ?? ""}
+                      onChange={(e) => setNewPriceForm({ ...newPriceForm, minQuantity: e.target.value ? Number(e.target.value) : undefined })}
+                      placeholder="Optional"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className={labelCls}>Notes</label>
+                  <input
+                    className={inputCls}
+                    value={newPriceForm.notes ?? ""}
+                    onChange={(e) => setNewPriceForm({ ...newPriceForm, notes: e.target.value })}
+                    placeholder="Optional additional notes"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 mt-6">
+                <button
+                  onClick={() => setAddPriceOpen(false)}
+                  className="px-4 py-2 rounded-full text-xs font-medium glass-panel border border-[var(--border)] text-[var(--muted-foreground)]"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    if (!newPriceForm.name?.trim() || !newPriceForm.code?.trim()) {
+                      toast.error("Name and Code are required");
+                      return;
+                    }
+                    if (!newPriceForm.basePrice || newPriceForm.basePrice <= 0) {
+                      toast.error("Price must be greater than zero");
+                      return;
+                    }
+                    pricingStore.addPrice({
+                      name: newPriceForm.name || "",
+                      description: newPriceForm.description || "",
+                      category: (newPriceForm.category || "CUSTOM") as PriceCategory,
+                      basePrice: newPriceForm.basePrice || 0,
+                      unit: (newPriceForm.unit || "Unit") as PriceUnit,
+                      code: newPriceForm.code || "",
+                      isActive: true,
+                      effectiveDate: newPriceForm.effectiveDate || new Date().toISOString().slice(0, 10),
+                      lastUpdatedBy: "Admin",
+                      minQuantity: newPriceForm.minQuantity,
+                      notes: newPriceForm.notes,
+                    });
+                    toast.success(`New price added: ${newPriceForm.name}`);
+                    setAddPriceOpen(false);
+                    setNewPriceForm({
+                      name: "", description: "", category: "CUSTOM" as PriceCategory, basePrice: 0,
+                      unit: "Unit" as PriceUnit, code: "", isActive: true,
+                      effectiveDate: new Date().toISOString().slice(0, 10),
+                      lastUpdatedBy: "Admin", notes: "",
+                    });
+                  }}
+                  className="inline-flex items-center gap-1.5 px-5 py-2 rounded-full text-xs font-semibold bg-[var(--energy-green)] text-[var(--obsidian)]"
+                >
+                  <Check className="w-3.5 h-3.5" /> Add Price Item
+                </button>
               </div>
             </div>
           </div>
