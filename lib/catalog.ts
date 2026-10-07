@@ -132,6 +132,14 @@ async function initStore() {
 // Fire init immediately
 initStore();
 
+if (supabase) {
+  supabase.auth.onAuthStateChange((_event, session) => {
+    if (session) {
+      initStore();
+    }
+  });
+}
+
 /* ------------------------------------------------------------------ */
 /*  Public API                                                         */
 /* ------------------------------------------------------------------ */
@@ -139,6 +147,7 @@ initStore();
 export const catalog = {
   subscribe,
   getSnapshot,
+  refresh: initStore,
 
   async addProduct(p: Omit<Product, "id">) {
     if (!supabase) return;
