@@ -10,6 +10,7 @@ const navLinks = [
   { label: "Fuel", path: "/fuel" },
   { label: "Solar", path: "/solar" },
   { label: "Hybrid", path: "/hybrid-energy" },
+  { label: "Estate IPP", path: "/estate-ipp" },
   { label: "ROI Calculator", path: "/calculator" },
   { label: "My SmartFix", path: "/portal" },
   { label: "Track Project", path: "/track" },

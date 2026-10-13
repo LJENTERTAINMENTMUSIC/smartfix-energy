@@ -39,6 +39,7 @@ import {
   Calendar,
   Layers,
   HelpCircle,
+  Smartphone,
 } from "lucide-react";
 import {
   portalStorage,
@@ -67,6 +68,8 @@ import TankTelemetryWidget from "@/components/portal/TankTelemetryWidget";
 import LiveDeliveryTracker from "@/components/portal/LiveDeliveryTracker";
 import VoiceWorkOrderRecorder from "@/components/portal/VoiceWorkOrderRecorder";
 import WhatsAppConciergeModal from "@/components/common/WhatsAppConciergeModal";
+import ResidentVendingSimulator from "@/components/ipp/ResidentVendingSimulator";
+import EstateSCADAPreview from "@/components/ipp/EstateSCADAPreview";
 import { Radio, MessageSquare as MessageSquareIcon } from "lucide-react";
 
 type PortalTab =
@@ -76,6 +79,7 @@ type PortalTab =
   | "assets"
   | "billing"
   | "energy"
+  | "estate"
   | "team"
   | "settings";
 
@@ -553,6 +557,7 @@ export default function CustomerPortal() {
             { id: "assets", label: `Assets & Service (${stats.totalAssets})`, icon: Cpu },
             { id: "billing", label: "Invoices & Quotes", icon: CreditCard },
             { id: "energy", label: "Energy Analytics", icon: BarChart3 },
+            { id: "estate", label: "Estate Power (IPP)", icon: Building },
             { id: "team", label: "Team & Sites", icon: Users },
             { id: "settings", label: "Account Settings", icon: Settings },
           ].map((t) => {
@@ -611,6 +616,50 @@ export default function CustomerPortal() {
                 <span className="text-[11px] text-[var(--muted-foreground)] block">Registered Assets</span>
                 <span className="text-2xl font-bold font-mono text-white">{stats.totalAssets}</span>
                 <span className="text-[10px] text-[var(--energy-green)] block mt-0.5">All telemetry active</span>
+              </div>
+            </div>
+
+            {/* Estate Microgrid & Smart Meter Quick Status */}
+            <div className="p-5 sm:p-6 rounded-3xl glass-card border border-[var(--energy-green)]/20 bg-gradient-to-r from-[var(--energy-green)]/5 via-black/40 to-black/40 flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-[var(--energy-green)]/15 text-[var(--energy-green)] flex items-center justify-center shrink-0">
+                  <Building className="w-6 h-6" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-mono text-[var(--energy-green)] uppercase tracking-wider font-bold">
+                      ESTATE IPP MICROGRID ACTIVE
+                    </span>
+                    <span className="inline-flex items-center gap-1 text-[10px] font-mono text-[var(--energy-green)] bg-[var(--energy-green)]/10 px-2 py-0.5 rounded-full">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[var(--energy-green)] animate-pulse" />
+                      50.02 Hz · 24/7 Island Utility
+                    </span>
+                  </div>
+                  <h4 className="font-bold text-base text-[var(--electric)] mt-0.5">
+                    Palm Gardens Estate · Meter #0429-8812-9402
+                  </h4>
+                  <p className="text-xs text-[var(--muted-foreground)]">
+                    Available Balance: <strong className="text-white">142.6 kWh</strong> (Est. 6.4 days) · ₦195/kWh
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("estate")}
+                  className="px-4 py-2.5 rounded-xl bg-[var(--energy-green)] text-[var(--obsidian)] text-xs font-bold btn-magnetic glow-green flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Smartphone className="w-3.5 h-3.5" />
+                  <span>Recharge Electricity Token</span>
+                </button>
+                <Link
+                  to="/estate-ipp"
+                  className="px-3.5 py-2.5 rounded-xl glass-panel text-xs text-[var(--electric)] hover:text-[var(--energy-green)] transition-colors flex items-center gap-1"
+                >
+                  <span>IPP Details</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
               </div>
             </div>
 
@@ -1453,6 +1502,169 @@ export default function CustomerPortal() {
                 <span className="flex items-center gap-2">
                   <span className="w-3 h-3 rounded bg-[var(--energy-green)]" /> CNG &amp; Solar Clean Substitution
                 </span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ================================================================== */}
+        {/*  TAB: ESTATE POWER & STS PRE-PAID METERING                         */}
+        {/* ================================================================== */}
+        {activeTab === "estate" && (
+          <div className="space-y-8 animate-in fade-in duration-200">
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--energy-green)]/15 text-[var(--energy-green)] text-xs font-semibold uppercase tracking-wider mb-2">
+                  <Building className="w-3.5 h-3.5" />
+                  CAPTIVE ESTATE MICROGRID · 24/7 ISLAND POWER
+                </div>
+                <h2 className="font-display font-bold text-2xl sm:text-3xl text-[var(--electric)]">
+                  Estate Power &amp; Smart Metering
+                </h2>
+                <p className="text-xs sm:text-sm text-[var(--muted-foreground)]">
+                  Connected to SmartFix 1.2MW Gas &amp; Solar Captive Microgrid · Palm Gardens Estate, Lekki Phase 1
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Link
+                  to="/estate-ipp"
+                  className="px-4 py-2 rounded-xl glass-panel text-xs text-[var(--energy-green)] font-bold hover:bg-[var(--energy-green)]/10 transition-colors flex items-center gap-1.5"
+                >
+                  <span>Explore Estate IPP Solutions</span>
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+            </div>
+
+            {/* Resident STS Split-Meter Live Telemetry Banner */}
+            <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-[#0b1f16] via-[#11171d] to-[#0e1014] border border-[var(--energy-green)]/30 space-y-5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-5">
+                <div className="space-y-1">
+                  <span className="text-[10px] font-mono uppercase tracking-wider text-[var(--energy-green)] block">
+                    IN-HOME STS SPLIT-METER #0429-8812-9402
+                  </span>
+                  <h3 className="font-display font-bold text-2xl sm:text-3xl text-white">
+                    Villa 14B, Hibiscus Close
+                  </h3>
+                  <span className="text-xs text-[var(--muted-foreground)]">
+                    Palm Gardens Estate (Lekki Phase 1) · Feeder Pillar #FP-04
+                  </span>
+                </div>
+
+                <div className="sm:text-right">
+                  <span className="text-[10px] uppercase font-mono text-[var(--muted-foreground)] block">
+                    Available Energy Balance
+                  </span>
+                  <div className="text-3xl sm:text-4xl font-extrabold font-mono text-gradient-green">
+                    142.6 <span className="text-base text-white font-normal">kWh</span>
+                  </div>
+                  <span className="text-[11px] text-[var(--energy-green)] block mt-0.5">
+                    Est. 6.4 Days remaining (@ 22.4 kWh/day)
+                  </span>
+                </div>
+              </div>
+
+              {/* Power Quality Telemetry Strip */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                <div className="p-3 rounded-2xl bg-black/40 border border-white/5 space-y-0.5">
+                  <span className="text-[10px] text-[var(--muted-foreground)] block">Voltage Health</span>
+                  <strong className="text-white text-sm font-mono">230.4 V (±0.5%)</strong>
+                  <span className="text-[10px] text-[var(--energy-green)] block">Pure Sine Wave</span>
+                </div>
+
+                <div className="p-3 rounded-2xl bg-black/40 border border-white/5 space-y-0.5">
+                  <span className="text-[10px] text-[var(--muted-foreground)] block">Grid Frequency</span>
+                  <strong className="text-[var(--energy-green)] text-sm font-mono">50.02 Hz</strong>
+                  <span className="text-[10px] text-[var(--muted-foreground)] block">Zero Flicker</span>
+                </div>
+
+                <div className="p-3 rounded-2xl bg-black/40 border border-white/5 space-y-0.5">
+                  <span className="text-[10px] text-[var(--muted-foreground)] block">Outage-Free Streak</span>
+                  <strong className="text-white text-sm font-mono">418 Days</strong>
+                  <span className="text-[10px] text-[var(--cng-blue)] block">100% SLA Compliant</span>
+                </div>
+
+                <div className="p-3 rounded-2xl bg-black/40 border border-white/5 space-y-0.5">
+                  <span className="text-[10px] text-[var(--muted-foreground)] block">Contract Tariff</span>
+                  <strong className="text-[var(--energy-green)] text-sm font-mono">₦195 / kWh</strong>
+                  <span className="text-[10px] text-amber-300 block">-58% vs Diesel</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Resident STS Pre-Paid Vending Simulator Embedded */}
+            <ResidentVendingSimulator />
+
+            {/* Microgrid SCADA Telemetry Preview */}
+            <div className="space-y-4">
+              <h3 className="font-display font-bold text-lg text-[var(--electric)]">
+                Estate Central Microgrid Telemetry (SCADA)
+              </h3>
+              <EstateSCADAPreview />
+            </div>
+
+            {/* Vending Transaction Records */}
+            <div className="p-6 rounded-3xl glass-card border border-white/10 space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="font-display font-bold text-base text-[var(--electric)]">
+                  Recent Electricity Token Purchases
+                </h3>
+                <span className="text-xs text-[var(--muted-foreground)]">Showing last 3 months</span>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs text-left">
+                  <thead>
+                    <tr className="border-b border-white/10 text-[var(--muted-foreground)] font-mono text-[11px]">
+                      <th className="pb-3 font-semibold">Receipt Ref</th>
+                      <th className="pb-3 font-semibold">Date &amp; Time</th>
+                      <th className="pb-3 font-semibold">Amount Paid</th>
+                      <th className="pb-3 font-semibold">Energy Credited</th>
+                      <th className="pb-3 font-semibold">20-Digit STS Token</th>
+                      <th className="pb-3 font-semibold">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                    <tr>
+                      <td className="py-3 font-mono text-[var(--energy-green)]">STS-9481-204</td>
+                      <td className="py-3 text-[var(--muted-foreground)]">Oct 04, 2026 · 14:22</td>
+                      <td className="py-3 font-bold text-white">₦20,000</td>
+                      <td className="py-3 font-mono text-[var(--energy-green)]">+102.56 kWh</td>
+                      <td className="py-3 font-mono text-white tracking-wider">4920 1849 2049 1048 5912</td>
+                      <td className="py-3">
+                        <span className="px-2 py-0.5 rounded-full bg-[var(--energy-green)]/15 text-[var(--energy-green)] text-[10px] font-bold">
+                          Accepted by CIU
+                        </span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="py-3 font-mono text-[var(--energy-green)]">STS-8812-701</td>
+                      <td className="py-3 text-[var(--muted-foreground)]">Sep 18, 2026 · 09:14</td>
+                      <td className="py-3 font-bold text-white">₦25,000</td>
+                      <td className="py-3 font-mono text-[var(--energy-green)]">+128.20 kWh</td>
+                      <td className="py-3 font-mono text-white tracking-wider">3819 0284 9182 3918 0194</td>
+                      <td className="py-3">
+                        <span className="px-2 py-0.5 rounded-full bg-[var(--energy-green)]/15 text-[var(--energy-green)] text-[10px] font-bold">
+                          Accepted by CIU
+                        </span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="py-3 font-mono text-[var(--energy-green)]">STS-7104-339</td>
+                      <td className="py-3 text-[var(--muted-foreground)]">Sep 01, 2026 · 18:45</td>
+                      <td className="py-3 font-bold text-white">₦15,000</td>
+                      <td className="py-3 font-mono text-[var(--energy-green)]">+76.92 kWh</td>
+                      <td className="py-3 font-mono text-white tracking-wider">5029 4819 2049 8192 4810</td>
+                      <td className="py-3">
+                        <span className="px-2 py-0.5 rounded-full bg-[var(--energy-green)]/15 text-[var(--energy-green)] text-[10px] font-bold">
+                          Accepted by CIU
+                        </span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>

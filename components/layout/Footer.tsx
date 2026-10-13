@@ -11,6 +11,7 @@ const footerSections = [
       { label: "SmartFix Fuel (Diesel & CNG)", path: "/fuel" },
       { label: "Generators", path: "/generators" },
       { label: "Solar & Battery", path: "/solar" },
+      { label: "Estate IPP Microgrids", path: "/estate-ipp" },
       { label: "Hybrid Energy", path: "/hybrid-energy" },
       { label: "Energy Audit", path: "/energy-audit" },
       { label: "Maintenance", path: "/maintenance" },

@@ -5,7 +5,7 @@ import {
   Cpu, ShieldCheck, Truck, PackageCheck, FileText, CheckCircle2,
   Phone, MessageSquare, ExternalLink, MapPin, Sparkles, Mail,
   BookOpen, ThumbsUp, ThumbsDown, Play, ArrowRight, History, Search,
-  Award, AlertTriangle, DollarSign, Clock, ToggleLeft, ToggleRight,
+  Award, AlertTriangle, DollarSign, Clock, ToggleLeft, ToggleRight, Building2,
 } from "lucide-react";
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid,
@@ -37,7 +37,7 @@ import {
 
 /* ------------------------------------------------------------------ */
 
-type Tab = "overview" | "products" | "sales" | "workforce" | "knowledge" | "learning" | "pricing";
+type Tab = "overview" | "products" | "sales" | "workforce" | "estates" | "knowledge" | "learning" | "pricing";
 
 const inputCls =
   "w-full rounded-lg bg-[var(--graphite)] border border-[var(--border)] px-3 py-2 text-sm text-[var(--electric)] placeholder:text-[var(--muted-foreground)] focus:outline-none focus:border-[var(--energy-green)] focus:ring-2 focus:ring-[rgba(0,217,127,0.15)] transition-all [color-scheme:dark]";
@@ -819,6 +819,7 @@ export default function Admin({ onSignOut }: { onSignOut?: () => void }) {
     { id: "products", label: "Products", icon: Package },
     { id: "sales", label: "Sales & Leads", icon: Users },
     { id: "workforce", label: "AI Workforce & Projects", icon: Cpu },
+    { id: "estates", label: "Estate IPP", icon: Building2 },
     { id: "knowledge", label: "Knowledge Studio", icon: BookOpen },
     { id: "learning", label: "AI Governance & Learning", icon: Sparkles },
     { id: "pricing", label: "Pricing Control", icon: DollarSign },
@@ -1391,6 +1392,241 @@ export default function Admin({ onSignOut }: { onSignOut?: () => void }) {
                         </tr>
                       );
                     })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ══ TAB: ESTATE IPP MICROGRIDS ══ */}
+        {tab === "estates" && (
+          <div className="space-y-8">
+            {/* Header & Quick Action */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--energy-green)]/15 text-[var(--energy-green)] text-xs font-semibold uppercase tracking-wider mb-2">
+                  <Building2 className="w-3.5 h-3.5" />
+                  CAPTIVE ESTATE MICROGRID UTILITY
+                </div>
+                <h2 className="font-display font-bold text-2xl text-[var(--electric)]">
+                  Estate IPP &amp; Microgrid Fleet Management
+                </h2>
+                <p className="text-xs text-[var(--muted-foreground)]">
+                  Monitor captive power plants, gas virtual pipeline decanting, and STS smart meter vending across contracted gated estates.
+                </p>
+              </div>
+
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    setTab("pricing");
+                    toast.info("Switched to Pricing Control. Filter by 'Estate IPP Microgrids' to adjust base tariffs.");
+                  }}
+                  className="press-scale inline-flex items-center gap-2 px-4 py-2.5 rounded-full text-xs font-semibold glass-panel border border-[var(--energy-green)]/30 text-[var(--energy-green)] hover:bg-[var(--energy-green)]/10"
+                >
+                  <DollarSign className="w-4 h-4" /> Manage IPP Tariffs (₦195/kWh)
+                </button>
+                <button
+                  onClick={() => toast.success("Estate Onboarding Wizard launched. Ready to assign microgrid assets and STS feeder pillars.")}
+                  className="press-scale inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-semibold bg-[var(--energy-green)] text-[var(--obsidian)] font-bold"
+                >
+                  <Plus className="w-4 h-4" /> Onboard New Estate
+                </button>
+              </div>
+            </div>
+
+            {/* Estate KPI Row */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <Kpi icon={Building2} label="Contracted Estates" value="4 Estates" sub="970 Total Housing Units" accent="var(--energy-green)" />
+              <Kpi icon={Zap} label="Installed Capacity" value="4.7 MVA" sub="Gas + Solar + BESS Fleet" accent="var(--cng-blue)" />
+              <Kpi icon={TrendingUp} label="Daily Generation" value="28.4 MWh" sub="100% Continuous Island Power" accent="var(--energy-green)" />
+              <Kpi icon={DollarSign} label="Monthly Vending Volume" value="₦44,820,000" sub="STS Cloud Pre-Paid Receipts" accent="#ff9f0a" />
+            </div>
+
+            {/* Contracted Estates Table */}
+            <div className="glass-card overflow-hidden">
+              <div className="px-6 py-4 border-b border-[var(--border)] flex items-center justify-between">
+                <div>
+                  <h3 className="font-display font-semibold text-lg text-[var(--electric)]">
+                    Active Captive Estate Power Plants
+                  </h3>
+                  <p className="text-xs text-[var(--muted-foreground)]">
+                    Real-time microgrid operational status, gas buffer reserve, and commercial contract terms.
+                  </p>
+                </div>
+                <span className="text-xs font-mono text-[var(--energy-green)] px-3 py-1 rounded-full bg-[var(--energy-green)]/10 border border-[var(--energy-green)]/30">
+                  Fleet Uptime SLA: 99.92%
+                </span>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs text-left">
+                  <thead>
+                    <tr className="border-b border-[var(--border)] text-[var(--muted-foreground)] font-mono">
+                      <th className="px-5 py-3 font-semibold">Estate &amp; Location</th>
+                      <th className="px-5 py-3 font-semibold">Units Scale</th>
+                      <th className="px-5 py-3 font-semibold">Microgrid Architecture</th>
+                      <th className="px-5 py-3 font-semibold">Contract Model</th>
+                      <th className="px-5 py-3 font-semibold">Gas Virtual Buffer</th>
+                      <th className="px-5 py-3 font-semibold">Grid Health</th>
+                      <th className="px-5 py-3 text-right font-semibold">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[var(--border)]">
+                    {[
+                      {
+                        name: "Palm Gardens Gated Estate",
+                        loc: "Lekki Phase 1, Lagos",
+                        units: 240,
+                        arch: "1.2MW Gas + 350kWp Solar",
+                        contract: "12-Year BOOT",
+                        tariff: "₦195 / kWh",
+                        gasBuffer: "3.4 Days Left (182 bar)",
+                        status: "Active Island",
+                        freq: "50.02 Hz",
+                      },
+                      {
+                        name: "Victoria Bay Luxury Crest",
+                        loc: "Ikoyi, Lagos",
+                        units: 180,
+                        arch: "800kVA Gas + 600kWh BESS",
+                        contract: "15-Year PPA",
+                        tariff: "₦195 / kWh",
+                        gasBuffer: "4.1 Days Left (198 bar)",
+                        status: "Active Island",
+                        freq: "50.01 Hz",
+                      },
+                      {
+                        name: "Guzape Diplomatic Hilltop",
+                        loc: "Guzape District, Abuja",
+                        units: 310,
+                        arch: "1.5MW Gas + 500kWp Solar + BESS",
+                        contract: "10-Year BOOT",
+                        tariff: "₦195 / kWh",
+                        gasBuffer: "2.8 Days Left (165 bar)",
+                        status: "Active Island",
+                        freq: "50.03 Hz",
+                      },
+                      {
+                        name: "Emerald Heights Court",
+                        loc: "GRA Phase 2, Port Harcourt",
+                        units: 140,
+                        arch: "1.2MVA Gas Baseload",
+                        contract: "Turnkey EPC + O&M",
+                        tariff: "₦185 / kWh",
+                        gasBuffer: "5.0 Days Left (215 bar)",
+                        status: "Active Island",
+                        freq: "50.00 Hz",
+                      },
+                    ].map((est, i) => (
+                      <tr key={est.name} className="hover:bg-white/[0.02] transition-colors">
+                        <td className="px-5 py-3.5">
+                          <strong className="text-white block font-sans text-sm">{est.name}</strong>
+                          <span className="text-[11px] text-[var(--muted-foreground)] flex items-center gap-1">
+                            <MapPin className="w-3 h-3 text-[var(--cng-blue)]" /> {est.loc}
+                          </span>
+                        </td>
+                        <td className="px-5 py-3.5">
+                          <span className="font-mono font-bold text-[var(--electric)]">{est.units} Units</span>
+                          <span className="text-[10px] text-[var(--muted-foreground)] block">100% STS Metered</span>
+                        </td>
+                        <td className="px-5 py-3.5">
+                          <span className="text-[var(--cng-blue)] font-bold">{est.arch}</span>
+                          <span className="text-[10px] text-[var(--muted-foreground)] block font-mono">Zero Flicker BESS</span>
+                        </td>
+                        <td className="px-5 py-3.5">
+                          <span className="px-2 py-0.5 rounded-full bg-white/10 text-[var(--electric)] text-[10px] font-bold">
+                            {est.contract}
+                          </span>
+                          <span className="text-[10px] text-[var(--energy-green)] block font-mono mt-0.5">{est.tariff}</span>
+                        </td>
+                        <td className="px-5 py-3.5">
+                          <span className="font-mono text-amber-400 font-semibold">{est.gasBuffer}</span>
+                          <span className="text-[10px] text-[var(--muted-foreground)] block">Decanting Line #1</span>
+                        </td>
+                        <td className="px-5 py-3.5">
+                          <span className="inline-flex items-center gap-1 text-[var(--energy-green)] font-semibold">
+                            <span className="w-2 h-2 rounded-full bg-[var(--energy-green)] animate-pulse" />
+                            {est.status}
+                          </span>
+                          <span className="text-[10px] font-mono text-[var(--muted-foreground)] block">{est.freq}</span>
+                        </td>
+                        <td className="px-5 py-3.5 text-right whitespace-nowrap">
+                          <div className="flex items-center justify-end gap-1.5">
+                            <button
+                              onClick={() => toast.info(`Viewing live SCADA telemetry for ${est.name}`)}
+                              className="px-2.5 py-1.5 rounded-lg glass-panel text-[11px] text-[var(--cng-blue)] hover:bg-[var(--cng-blue)]/20"
+                            >
+                              Telemetry
+                            </button>
+                            <button
+                              onClick={() => toast.success(`Exporting PPA performance report for ${est.name}`)}
+                              className="px-2.5 py-1.5 rounded-lg glass-panel text-[11px] text-[var(--energy-green)] hover:bg-[var(--energy-green)]/20"
+                            >
+                              PPA Report
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Live STS Vending Audit Log */}
+            <div className="glass-card overflow-hidden">
+              <div className="px-6 py-4 border-b border-[var(--border)] flex items-center justify-between">
+                <div>
+                  <h3 className="font-display font-semibold text-lg text-[var(--electric)]">
+                    STS Split-Meter Live Vending Logs
+                  </h3>
+                  <p className="text-xs text-[var(--muted-foreground)]">
+                    Audit trail of pre-paid electricity tokens issued to estate residents.
+                  </p>
+                </div>
+                <span className="text-xs font-mono text-[var(--cng-blue)]">
+                  Gateway: IEC 62055-41 (STS Association)
+                </span>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs text-left">
+                  <thead>
+                    <tr className="border-b border-[var(--border)] text-[var(--muted-foreground)] font-mono">
+                      <th className="px-5 py-3 font-semibold">Receipt Ref</th>
+                      <th className="px-5 py-3 font-semibold">Estate</th>
+                      <th className="px-5 py-3 font-semibold">Unit / Address</th>
+                      <th className="px-5 py-3 font-semibold">Meter Number</th>
+                      <th className="px-5 py-3 font-semibold">Amount Paid</th>
+                      <th className="px-5 py-3 font-semibold">Energy (kWh)</th>
+                      <th className="px-5 py-3 font-semibold">Encrypted 20-Digit STS Token</th>
+                      <th className="px-5 py-3 text-right font-semibold">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[var(--border)]">
+                    {[
+                      { ref: "STS-9481-204", est: "Palm Gardens Estate", unit: "Villa 14B, Hibiscus Close", meter: "0429-8812-9402", amt: 20000, kwh: 102.56, token: "4920 1849 2049 1048 5912", time: "10 mins ago" },
+                      { ref: "STS-8812-701", est: "Victoria Bay Crest", unit: "Penthouse 3A, Crest Tower", meter: "0433-9104-1849", amt: 50000, kwh: 256.41, token: "3819 0284 9182 3918 0194", time: "35 mins ago" },
+                      { ref: "STS-7104-339", est: "Guzape Diplomatic", unit: "Mansion 7, Royal Drive", meter: "0418-7203-9912", amt: 35000, kwh: 179.48, token: "5029 4819 2049 8192 4810", time: "2 hours ago" },
+                      { ref: "STS-6619-512", est: "Emerald Heights Court", unit: "Plot 18, Court Avenue", meter: "0455-6619-4401", amt: 15000, kwh: 81.08, token: "1928 4819 2049 1948 2910", time: "4 hours ago" },
+                    ].map((tx) => (
+                      <tr key={tx.ref} className="hover:bg-white/[0.02] transition-colors">
+                        <td className="px-5 py-3 font-mono text-[var(--energy-green)] font-bold">{tx.ref}</td>
+                        <td className="px-5 py-3 font-medium text-white">{tx.est}</td>
+                        <td className="px-5 py-3 text-[var(--muted-foreground)]">{tx.unit}</td>
+                        <td className="px-5 py-3 font-mono text-[var(--cng-blue)]">{tx.meter}</td>
+                        <td className="px-5 py-3 font-mono font-bold text-white">₦{tx.amt.toLocaleString()}</td>
+                        <td className="px-5 py-3 font-mono text-[var(--energy-green)] font-bold">+{tx.kwh} kWh</td>
+                        <td className="px-5 py-3 font-mono text-white tracking-wider">{tx.token}</td>
+                        <td className="px-5 py-3 text-right">
+                          <span className="px-2 py-0.5 rounded-full bg-[var(--energy-green)]/15 text-[var(--energy-green)] text-[10px] font-bold">
+                            CIU Accepted
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>

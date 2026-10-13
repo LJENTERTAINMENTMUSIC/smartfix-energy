@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Car, Factory, Zap, Sun, ClipboardCheck, Layers } from "lucide-react";
+import { ArrowRight, Car, Factory, Zap, Sun, ClipboardCheck, Layers, Building2 } from "lucide-react";
 
 const solutions = [
   {
@@ -49,6 +49,14 @@ const solutions = [
     cta: "Design My System",
     link: "/hybrid-energy",
     accent: "var(--electric)",
+  },
+  {
+    icon: Building2,
+    title: "Estate IPP Microgrids",
+    desc: "24/7 captive gas and solar island power plants for gated residential estates under Zero-CapEx BOOT.",
+    cta: "Explore Estate IPP",
+    link: "/estate-ipp",
+    accent: "var(--energy-green)",
   },
 ];
 

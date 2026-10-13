@@ -6,7 +6,7 @@ const industries = [
   { icon: Factory, title: "Manufacturing", desc: "Industrial power and energy systems for factories and production facilities." },
   { icon: Hotel, title: "Hospitality", desc: "Hotels, apartments and hospitality facilities energy management." },
   { icon: HeartPulse, title: "Healthcare", desc: "Reliable energy infrastructure for hospitals and clinics." },
-  { icon: Building2, title: "Real Estate", desc: "Estate-wide power and energy management solutions." },
+  { icon: Building2, title: "Real Estate & Gated Estates", desc: "24/7 captive gas & solar IPP microgrids with smart STS split-metering for gated residential communities.", link: "/estate-ipp" },
   { icon: Briefcase, title: "Corporate", desc: "Office energy systems and power optimization." },
   { icon: Landmark, title: "Government", desc: "Energy infrastructure and technical services for government facilities." },
   { icon: Wheat, title: "Agriculture", desc: "Powering farms, irrigation systems and processing facilities." },
@@ -39,15 +39,35 @@ export default function Industries() {
       <section className="section-padding pt-4 relative">
         <div className="max-w-7xl mx-auto px-4 md:px-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-            {industries.map((ind, i) => (
-              <div key={ind.title} className="glass-card p-6 reveal" style={{ animationDelay: `${i * 0.08}s` }}>
-                <div className="w-12 h-12 rounded-xl bg-[rgba(0,168,255,0.08)] flex items-center justify-center mb-4">
-                  <ind.icon className="w-6 h-6 text-[var(--cng-blue)]" />
+            {industries.map((ind, i) => {
+              const CardContent = (
+                <>
+                  <div className="w-12 h-12 rounded-xl bg-[rgba(0,168,255,0.08)] flex items-center justify-center mb-4">
+                    <ind.icon className="w-6 h-6 text-[var(--cng-blue)]" />
+                  </div>
+                  <h3 className="font-display font-semibold text-lg text-[var(--electric)] mb-2 flex items-center justify-between">
+                    <span>{ind.title}</span>
+                    {ind.link && <ArrowRight className="w-4 h-4 text-[var(--energy-green)] opacity-70 group-hover:translate-x-1 transition-transform" />}
+                  </h3>
+                  <p className="text-sm text-[var(--muted-foreground)] leading-relaxed">{ind.desc}</p>
+                </>
+              );
+
+              return ind.link ? (
+                <Link
+                  key={ind.title}
+                  to={ind.link}
+                  className="glass-card p-6 reveal block group hover:border-[var(--energy-green)]/40 transition-all cursor-pointer"
+                  style={{ animationDelay: `${i * 0.08}s` }}
+                >
+                  {CardContent}
+                </Link>
+              ) : (
+                <div key={ind.title} className="glass-card p-6 reveal" style={{ animationDelay: `${i * 0.08}s` }}>
+                  {CardContent}
                 </div>
-                <h3 className="font-display font-semibold text-lg text-[var(--electric)] mb-2">{ind.title}</h3>
-                <p className="text-sm text-[var(--muted-foreground)] leading-relaxed">{ind.desc}</p>
-              </div>
-            ))}
+              );
+            })}
           </div>
           <div className="mt-10 text-center">
             <Link to="/request-quote" className="group inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-[var(--energy-green)] text-[var(--obsidian)] font-semibold btn-magnetic glow-green">

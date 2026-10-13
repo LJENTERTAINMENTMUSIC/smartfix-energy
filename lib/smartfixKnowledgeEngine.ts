@@ -307,6 +307,28 @@ export const INITIAL_KNOWLEDGE_BASE: KnowledgeItem[] = [
       pricing: { baseRate: 1250, unit: "Litre", minVolume: 2500 },
     },
   },
+  {
+    id: "SFE-PROD-004",
+    title: "SmartFix Estate IPP — Captive Microgrids & Smart Metering for Gated Estates",
+    domain: "PRODUCT",
+    category: "Microgrids & IPP",
+    content: "SmartFix Estate IPP delivers 24/7 uninterrupted captive microgrid power for residential gated communities, commercial clusters, and multi-family estates. The solution combines utility-grade gas generation (CNG virtual pipeline / LNG / PNG), rooftop and carport solar PV, and LiFePO4 battery energy storage (BESS) for zero-downtime, flicker-free power. Delivered via Zero-CapEx BOOT (Build-Own-Operate-Transfer) or PPA models where the estate invests zero capital, and residents pay only for metered electricity consumed via anti-tamper STS smart split meters at approximately ₦195/kWh (slashing estate energy spend by 45-60% compared to diesel generators at ₦480-₦550/kWh). Fully NERC Captive Power compliant with automated cloud token vending.",
+    source: "SmartFix Estate IPP Technical & Commercial Architecture Manual 2026",
+    sourceType: "ProductManual",
+    hierarchyLevel: 1,
+    version: "1.0",
+    createdAt: "2026-03-01",
+    updatedAt: "2026-10-13",
+    owner: "Head of Infrastructure & Estate IPP",
+    status: "PUBLISHED",
+    effectiveDate: "2026-03-01",
+    reviewDate: "2027-03-01",
+    riskLevel: "HIGH",
+    tags: ["ipp", "estates", "microgrid", "captive power", "boot", "ppa", "gas to power", "smart metering", "sts", "residential"],
+    structuredRules: {
+      pricing: { baseRate: 195, unit: "kWh", minVolume: 50 },
+    },
+  },
 
   // C. ENGINEERING KNOWLEDGE
   {

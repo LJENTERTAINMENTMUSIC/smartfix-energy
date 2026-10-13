@@ -26,6 +26,7 @@ export type PriceCategory =
   | "SERVICE"
   | "PARTS"
   | "SOLAR"
+  | "ESTATE_IPP"
   | "FLEET"
   | "LOGISTICS"
   | "CUSTOM";
@@ -88,6 +89,9 @@ export const PRICE_CODES = {
   CNG_SERVICING: "CNG_SERVICING",
   GENERATOR_MAINTENANCE_VISIT: "GENERATOR_MAINTENANCE_VISIT",
   SOLAR_PV_PER_KWP: "SOLAR_PV_PER_KWP",
+  IPP_ESTATE_BASE_TARIFF_KWH: "IPP_ESTATE_BASE_TARIFF_KWH",
+  STS_PREPAID_SMETER_UNIT: "STS_PREPAID_SMETER_UNIT",
+  ESTATE_IPP_FEASIBILITY_AUDIT: "ESTATE_IPP_FEASIBILITY_AUDIT",
   FLEET_ASSESSMENT_FEE: "FLEET_ASSESSMENT_FEE",
   EMERGENCY_CALLOUT: "EMERGENCY_CALLOUT",
   EXPRESS_DELIVERY_SURCHARGE: "EXPRESS_DELIVERY_SURCHARGE",
@@ -221,6 +225,53 @@ const SEED_PRICES: PriceItem[] = [
     lastUpdatedBy: "Admin (System Seed)",
     lastUpdatedAt: new Date().toISOString(),
     notes: "Battery storage quoted separately.",
+  },
+
+  // ESTATE IPP (INDEPENDENT POWER PRODUCER FOR ESTATES)
+  {
+    id: "PRC-IPP-001",
+    code: PRICE_CODES.IPP_ESTATE_BASE_TARIFF_KWH,
+    name: "Estate Hybrid IPP Tariff (Per kWh)",
+    description: "24/7 continuous captive gas & solar microgrid power for residential/commercial gated estates. Includes plant maintenance, virtual pipeline fuel delivery & automated STS vending.",
+    category: "ESTATE_IPP",
+    basePrice: 195,
+    unit: "Unit",
+    minQuantity: 50,
+    bulkDiscountPercent: 5,
+    bulkThreshold: 500,
+    isActive: true,
+    effectiveDate: "2026-03-01",
+    lastUpdatedBy: "Admin (System Seed)",
+    lastUpdatedAt: new Date().toISOString(),
+    notes: "Tariff benchmarked against Disco Band A (₦209+) and diesel generation (₦480+). Zero CapEx under BOOT/PPA.",
+  },
+  {
+    id: "PRC-IPP-002",
+    code: PRICE_CODES.STS_PREPAID_SMETER_UNIT,
+    name: "STS Smart Split Pre-Paid Meter (Class 1) + Wireless CIU",
+    description: "Anti-tamper split-DIN rail electricity meter for estate feeder pillars with RF/PLC wireless Customer Interface Unit (CIU). Instant encrypted token entry & cloud telemetry.",
+    category: "ESTATE_IPP",
+    basePrice: 95000,
+    unit: "Unit",
+    isActive: true,
+    effectiveDate: "2026-01-01",
+    lastUpdatedBy: "Admin (System Seed)",
+    lastUpdatedAt: new Date().toISOString(),
+    notes: "Compliant with Standard Transfer Specification (IEC 62055). Free hardware under BOOT contracts.",
+  },
+  {
+    id: "PRC-IPP-003",
+    code: PRICE_CODES.ESTATE_IPP_FEASIBILITY_AUDIT,
+    name: "Estate Microgrid Feasibility Study & Load Profiling",
+    description: "7-day 3-phase power quality logging, peak load profiling, gas logistics routing, and PPA financial modeling for Estate EXCOs & facility managers.",
+    category: "ESTATE_IPP",
+    basePrice: 350000,
+    unit: "Project",
+    isActive: true,
+    effectiveDate: "2026-01-01",
+    lastUpdatedBy: "Admin (System Seed)",
+    lastUpdatedAt: new Date().toISOString(),
+    notes: "100% credited back to estate upon execution of IPP Power Purchase Agreement.",
   },
 
   // FLEET
@@ -395,9 +446,9 @@ export const pricingStore = {
     return state.prices.find((p) => p.code === code && p.isActive);
   },
 
-  /** Get price value by code (returns the numeric price or 0) */
-  getPriceValue(code: string): number {
-    return this.getByCode(code)?.basePrice ?? 0;
+  /** Get price value by code (returns the numeric price or fallback) */
+  getPriceValue(code: string, fallback = 0): number {
+    return this.getByCode(code)?.basePrice ?? fallback;
   },
 
   /** Get prices by category */
@@ -520,6 +571,7 @@ export function formatPriceCategory(cat: PriceCategory): string {
     SERVICE: "🔧 Service & Maintenance",
     PARTS: "🔩 Parts & Components",
     SOLAR: "☀️ Solar & Renewables",
+    ESTATE_IPP: "🏘️ Estate IPP Microgrids",
     FLEET: "🚛 Fleet Services",
     LOGISTICS: "🚚 Logistics & Delivery",
     CUSTOM: "📋 Custom",

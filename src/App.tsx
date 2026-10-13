@@ -23,6 +23,7 @@ import Quote from "@/pages/Quote";
 import Contact from "@/pages/Contact";
 import CustomerPortal from "@/pages/CustomerPortal";
 import EnergyCalculator from "@/pages/EnergyCalculator";
+import EstateIPP from "@/pages/EstateIPP";
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -64,6 +65,9 @@ export default function App() {
           <Route path="/calculator" element={<EnergyCalculator />} />
           <Route path="/roi-calculator" element={<EnergyCalculator />} />
           <Route path="/savings-calculator" element={<EnergyCalculator />} />
+          <Route path="/estate-ipp" element={<EstateIPP />} />
+          <Route path="/ipp" element={<EstateIPP />} />
+          <Route path="/estates" element={<EstateIPP />} />
           <Route path="/request-quote" element={<Quote />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="*" element={<Home />} />

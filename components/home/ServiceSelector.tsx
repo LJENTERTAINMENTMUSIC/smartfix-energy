@@ -32,10 +32,11 @@ const CATEGORIES = [
       "Industrial diesel generators",
       "Commercial solar PV arrays",
       "LiFePO4 battery energy storage",
+      "Estate IPP captive microgrids",
       "Smart hybrid microgrids",
     ],
-    link: "/generators",
-    cta: "Explore Power",
+    link: "/estate-ipp",
+    cta: "Explore Power & IPP",
   },
   {
     id: "fuel",
@@ -60,12 +61,13 @@ const CATEGORIES = [
     tagline: "Turnkey Energy Engineering",
     accent: "var(--electric)",
     items: [
+      "Estate microgrid BOOT / PPA",
       "CNG daughter stations",
       "High-pressure gas storage (200-bar)",
       "Industrial ATS switchgear",
       "Energy-as-a-Service (EaaS)",
     ],
-    link: "/hybrid-energy",
+    link: "/estate-ipp",
     cta: "Explore Infrastructure",
   },
 ];
