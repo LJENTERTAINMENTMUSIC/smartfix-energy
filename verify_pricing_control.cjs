@@ -7,8 +7,8 @@ async function run() {
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   const page = await context.newPage();
 
-  let baseUrl = 'http://127.0.0.1:4173';
-  console.log(`Testing against preview server: ${baseUrl}`);
+  let baseUrl = 'https://smartfix-energy.vercel.app';
+  console.log(`Testing against LIVE PRODUCTION server: ${baseUrl}`);
 
   // 1. Visit Admin Login
   console.log(`1. Navigating to ${baseUrl}/admin/...`);

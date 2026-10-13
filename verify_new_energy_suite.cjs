@@ -9,7 +9,8 @@ async function run() {
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   const page = await context.newPage();
 
-  const baseUrl = 'http://127.0.0.1:4173';
+  const baseUrl = 'https://smartfix-energy.vercel.app';
+  console.log(`Testing against LIVE PRODUCTION server: ${baseUrl}`);
 
   // 1. Verify Energy Calculator Page
   console.log('1. Testing /calculator page...');
