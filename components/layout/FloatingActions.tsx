@@ -3,9 +3,11 @@ import { Link } from "react-router-dom";
 import { Sparkles, MessageCircle, FileText } from "lucide-react";
 import { SMARTFIX_CONTACT } from "@/lib/contact";
 import SmartFixConciergeModal from "@/components/concierge/SmartFixConciergeModal";
+import WhatsAppConciergeModal from "@/components/common/WhatsAppConciergeModal";
 
 export default function FloatingActions() {
   const [showConcierge, setShowConcierge] = useState(false);
+  const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
 
   return (
     <>
@@ -28,11 +30,9 @@ export default function FloatingActions() {
         </button>
 
         {/* 2. Secondary: WhatsApp */}
-        <a
-          href={SMARTFIX_CONTACT.whatsapp}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="group relative flex items-center gap-2 px-3 py-2 sm:px-3.5 sm:py-2.5 rounded-full bg-[#25D366] text-white font-medium text-xs shadow-xl btn-magnetic hover:scale-105 transition-transform"
+        <button
+          onClick={() => setShowWhatsAppModal(true)}
+          className="group relative flex items-center gap-2 px-3 py-2 sm:px-3.5 sm:py-2.5 rounded-full bg-[#25D366] text-white font-medium text-xs shadow-xl btn-magnetic hover:scale-105 transition-transform cursor-pointer"
           aria-label="WhatsApp — Talk to SmartFix"
           title="WhatsApp — Talk to SmartFix"
         >
@@ -41,7 +41,7 @@ export default function FloatingActions() {
           <span className="absolute right-full mr-3 whitespace-nowrap text-xs font-semibold text-[var(--electric)] glass-panel px-3 py-1.5 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
             WhatsApp · Talk to SmartFix
           </span>
-        </a>
+        </button>
 
         {/* 3. Tertiary: My Project */}
         <Link
@@ -62,6 +62,12 @@ export default function FloatingActions() {
       <SmartFixConciergeModal
         isOpen={showConcierge}
         onClose={() => setShowConcierge(false)}
+      />
+
+      {/* Embedded WhatsApp Direct Concierge Modal */}
+      <WhatsAppConciergeModal
+        isOpen={showWhatsAppModal}
+        onClose={() => setShowWhatsAppModal(false)}
       />
     </>
   );

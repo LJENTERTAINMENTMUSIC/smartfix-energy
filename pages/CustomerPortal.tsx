@@ -63,6 +63,11 @@ import OrderFuelModal from "@/components/portal/OrderFuelModal";
 import PayInvoiceModal from "@/components/portal/PayInvoiceModal";
 import AssetDetailModal from "@/components/portal/AssetDetailModal";
 import PortalSupportChat from "@/components/portal/PortalSupportChat";
+import TankTelemetryWidget from "@/components/portal/TankTelemetryWidget";
+import LiveDeliveryTracker from "@/components/portal/LiveDeliveryTracker";
+import VoiceWorkOrderRecorder from "@/components/portal/VoiceWorkOrderRecorder";
+import WhatsAppConciergeModal from "@/components/common/WhatsAppConciergeModal";
+import { Radio, MessageSquare as MessageSquareIcon } from "lucide-react";
 
 type PortalTab =
   | "overview"
@@ -102,6 +107,7 @@ export default function CustomerPortal() {
   const [selectedAsset, setSelectedAsset] = useState<CustomerAsset | null>(null);
   const [showChatModal, setShowChatModal] = useState(false);
   const [showNotifMenu, setShowNotifMenu] = useState(false);
+  const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
 
   // Search & Filter filters
   const [assetFilter, setAssetFilter] = useState<string>("All");
@@ -512,6 +518,18 @@ export default function CustomerPortal() {
 
             <button
               type="button"
+              onClick={() => setShowWhatsAppModal(true)}
+              className="p-4 rounded-2xl bg-[#25D366]/10 border border-[#25D366]/30 hover:border-[#25D366] transition-all text-left group cursor-pointer"
+            >
+              <div className="w-9 h-9 rounded-xl bg-[#25D366]/20 text-[#25D366] flex items-center justify-center mb-2.5 group-hover:scale-105 transition-transform">
+                <MessageSquareIcon className="w-4 h-4" />
+              </div>
+              <div className="font-bold text-xs text-[#25D366]">WhatsApp Desk</div>
+              <p className="text-[10px] text-[var(--muted-foreground)] mt-0.5">Direct 0813 978 4331</p>
+            </button>
+
+            <button
+              type="button"
               onClick={() => setShowIssueModal(true)}
               className="p-4 rounded-2xl bg-red-950/20 border border-red-500/30 hover:border-red-500 transition-all text-left group cursor-pointer"
             >
@@ -596,49 +614,15 @@ export default function CustomerPortal() {
               </div>
             </div>
 
-            {/* Live In-Transit Fuel Delivery Telemetry Card */}
-            {orders.some((o) => o.status === "ON THE WAY") && (
-              <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-r from-[#171a21] to-[#121b22] border border-[var(--cng-blue)]/40 relative overflow-hidden">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-2xl bg-[var(--cng-blue)]/15 border border-[var(--cng-blue)]/30 flex items-center justify-center text-[var(--cng-blue)] flex-shrink-0">
-                      <Truck className="w-6 h-6 animate-pulse" />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-mono font-bold text-[var(--cng-blue)] uppercase tracking-wider">
-                          LIVE LOGISTICS DISPATCH · TANKER IN TRANSIT
-                        </span>
-                        <span className="px-2 py-0.5 rounded-full bg-[var(--cng-blue)]/20 text-[var(--cng-blue)] text-[10px] font-bold">
-                          ON THE WAY
-                        </span>
-                      </div>
-                      <h3 className="font-display font-bold text-lg text-[var(--electric)] mt-0.5">
-                        {orders.find((o) => o.status === "ON THE WAY")?.items}
-                      </h3>
-                      <p className="text-xs text-[var(--muted-foreground)]">
-                        Tanker: <strong className="text-white font-mono">{orders.find((o) => o.status === "ON THE WAY")?.tankerReg}</strong> · Driver: {orders.find((o) => o.status === "ON THE WAY")?.driverName} ({orders.find((o) => o.status === "ON THE WAY")?.driverPhone})
-                      </p>
-                    </div>
-                  </div>
+            {/* Smart Tank IoT Telemetry Widget */}
+            <TankTelemetryWidget
+              onQuickReorder={(tank, recommendedVolume) => {
+                setShowFuelModal(true);
+              }}
+            />
 
-                  <div className="flex items-center gap-3">
-                    <div className="text-right">
-                      <span className="text-[11px] text-[var(--muted-foreground)] block">Expected Arrival Window:</span>
-                      <span className="text-sm font-bold font-mono text-[var(--energy-green)]">
-                        {orders.find((o) => o.status === "ON THE WAY")?.estimatedArrival}
-                      </span>
-                    </div>
-                    <a
-                      href={`tel:${orders.find((o) => o.status === "ON THE WAY")?.driverPhone}`}
-                      className="px-4 py-2.5 rounded-xl bg-[var(--cng-blue)] text-white font-bold text-xs inline-flex items-center gap-1.5"
-                    >
-                      <Phone className="w-3.5 h-3.5" /> Call Driver
-                    </a>
-                  </div>
-                </div>
-              </div>
-            )}
+            {/* Live GPS Tanker Dispatch Tracker with e-POD */}
+            <LiveDeliveryTracker />
 
             {/* Dual Grid: Active Projects & Chronological Activity Feed */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -778,6 +762,15 @@ export default function CustomerPortal() {
                 Request New Engineering Project +
               </button>
             </div>
+
+            {/* Field Technician Voice Work-Orders */}
+            <VoiceWorkOrderRecorder
+              projectId={projects[0]?.id || "SFE-PRJ-01"}
+              facilityName={profile.company}
+              onReportSaved={(rep) => {
+                toast.success(`Voice memo attached to ${rep.projectId}`);
+              }}
+            />
 
             {/* Project List */}
             <div className="space-y-6">
@@ -945,6 +938,9 @@ export default function CustomerPortal() {
                 + New Fuel Order / Scheduled Delivery
               </button>
             </div>
+
+            {/* Live Tanker GPS Route & e-POD Sign-Off */}
+            <LiveDeliveryTracker />
 
             {/* Recurring Supply Schedules Card */}
             <div className="p-6 rounded-3xl glass-card border border-white/10 space-y-4">
@@ -1712,6 +1708,11 @@ export default function CustomerPortal() {
         orders={orders}
         assets={assets}
         invoices={invoices}
+      />
+
+      <WhatsAppConciergeModal
+        isOpen={showWhatsAppModal}
+        onClose={() => setShowWhatsAppModal(false)}
       />
     </div>
   );

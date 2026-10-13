@@ -8,6 +8,7 @@ import Solutions from "@/components/home/Solutions";
 import WhySmartFix from "@/components/home/WhySmartFix";
 import FinalCTA from "@/components/home/FinalCTA";
 import SmartFixConciergeModal from "@/components/concierge/SmartFixConciergeModal";
+import EnergySavingsCalculator from "@/components/calculator/EnergySavingsCalculator";
 import { Truck, Factory, Hotel, HeartPulse, Building2, Briefcase, Landmark, Wheat } from "lucide-react";
 
 const industries = [
@@ -66,6 +67,7 @@ export default function Home() {
       <EnergyAdvisory onOpenConcierge={() => setShowConcierge(true)} />
       <HowItWorks />
       <Solutions />
+      <EnergySavingsCalculator />
       <WhySmartFix />
       <Industries />
       <FinalCTA />

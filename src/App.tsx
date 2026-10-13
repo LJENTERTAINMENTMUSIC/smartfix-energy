@@ -22,6 +22,7 @@ import TrackProject from "@/pages/TrackProject";
 import Quote from "@/pages/Quote";
 import Contact from "@/pages/Contact";
 import CustomerPortal from "@/pages/CustomerPortal";
+import EnergyCalculator from "@/pages/EnergyCalculator";
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -60,6 +61,9 @@ export default function App() {
           <Route path="/portal" element={<CustomerPortal />} />
           <Route path="/my-smartfix" element={<CustomerPortal />} />
           <Route path="/customer-portal" element={<CustomerPortal />} />
+          <Route path="/calculator" element={<EnergyCalculator />} />
+          <Route path="/roi-calculator" element={<EnergyCalculator />} />
+          <Route path="/savings-calculator" element={<EnergyCalculator />} />
           <Route path="/request-quote" element={<Quote />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="*" element={<Home />} />
