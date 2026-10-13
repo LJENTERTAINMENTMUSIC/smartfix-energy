@@ -9,9 +9,9 @@ async function run() {
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   const page = await context.newPage();
 
-  // Test against local preview server first
-  const baseUrl = 'http://127.0.0.1:4173';
-  console.log(`Targeting local preview server: ${baseUrl}`);
+  // Test against live production deployment
+  const baseUrl = 'https://smartfix-energy.vercel.app';
+  console.log(`Targeting LIVE PRODUCTION server: ${baseUrl}`);
 
   try {
     // 1. Test /estate-ipp page
