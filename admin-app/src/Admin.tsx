@@ -6,6 +6,7 @@ import {
   Phone, MessageSquare, ExternalLink, MapPin, Sparkles, Mail,
   BookOpen, ThumbsUp, ThumbsDown, Play, ArrowRight, History, Search,
   Award, AlertTriangle, DollarSign, Clock, ToggleLeft, ToggleRight, Building2,
+  Warehouse, Zap,
 } from "lucide-react";
 import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid,
@@ -34,6 +35,13 @@ import {
   formatPriceWithUnit, formatPriceCategory,
   type PriceItem, type PriceCategory, type PriceUnit, type PriceChange,
 } from "@shared/pricingStore";
+import {
+  portalStorage,
+  type PortalProject,
+  type BomMaterialItem,
+  type ChainStage,
+  createStandardBomItems,
+} from "@shared/portalData";
 
 /* ------------------------------------------------------------------ */
 
@@ -584,6 +592,383 @@ function BumpVersionModal({
 }
 
 /* ------------------------------------------------------------------ */
+/*  Project Pack & Material Readiness Inspector Modal                 */
+/* ------------------------------------------------------------------ */
+
+function AdminProjectPackModal({
+  open,
+  project,
+  onClose,
+  onProjectUpdated,
+}: {
+  open: boolean;
+  project: PortalProject | null;
+  onClose: () => void;
+  onProjectUpdated: (p: PortalProject) => void;
+}) {
+  if (!open || !project) return null;
+
+  const [activeStageFilter, setActiveStageFilter] = useState<string>("All");
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [signedHandover, setSignedHandover] = useState<boolean>(false);
+
+  const STAGES: { stage: ChainStage; label: string; desc: string; icon: any }[] = [
+    { stage: "Warehouse", label: "01. Warehouse Staged", desc: "QC inspected & serialized at Central Depot", icon: Warehouse },
+    { stage: "Vehicle", label: "02. Vehicle In-Transit", desc: "Sealed on dispatch fleet with serialized bolt seals", icon: Truck },
+    { stage: "Site", label: "03. Site Received", desc: "Delivered to client facility & accepted by site lead", icon: MapPin },
+    { stage: "Installed", label: "04. Installed & Live", desc: "Mounted, connected & commissioned for operation", icon: CheckCircle2 },
+  ];
+
+  const currentStageIdx = STAGES.findIndex((s) => s.stage === (project.chainStage || "Warehouse"));
+
+  const bomList = project.bomItems || createStandardBomItems(project.id, project.chainStage || "Warehouse");
+
+  const filteredBom = bomList.filter((item) => {
+    const matchesStage = activeStageFilter === "All" || item.chainStage === activeStageFilter;
+    const matchesQuery =
+      searchQuery === "" ||
+      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.sku.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (item.serialNumber && item.serialNumber.toLowerCase().includes(searchQuery.toLowerCase()));
+    return matchesStage && matchesQuery;
+  });
+
+  const handleAdvanceStage = () => {
+    const updated = portalStorage.advanceProjectChainStage(project.id);
+    if (updated) {
+      onProjectUpdated(updated);
+      toast.success(`Project Pack ${updated.id} advanced to "${updated.chainStage}" stage!`, {
+        description: updated.materialsStatus,
+      });
+    }
+  };
+
+  const handleItemStageChange = (itemId: string, newStage: ChainStage) => {
+    const updated = portalStorage.updateBomItemStage(project.id, itemId, newStage);
+    if (updated) {
+      onProjectUpdated(updated);
+      toast.success(`BOM item moved to ${newStage}`);
+    }
+  };
+
+  const handleCustodySignOff = () => {
+    setSignedHandover(true);
+    toast.success("Custody Transfer Electronically Signed & Verified!", {
+      description: "Recorded on operations audit log.",
+    });
+  };
+
+  const cleanPhone = project.phone ? project.phone.replace(/[^0-9]/g, "").replace(/^0/, "") : "8139784331";
+
+  const getStageBadgeColor = (stage: ChainStage) => {
+    switch (stage) {
+      case "Warehouse":
+        return "bg-amber-500/15 text-amber-400 border-amber-500/30";
+      case "Vehicle":
+        return "bg-[var(--cng-blue)]/15 text-[var(--cng-blue)] border-[var(--cng-blue)]/30";
+      case "Site":
+        return "bg-purple-500/15 text-purple-400 border-purple-500/30";
+      case "Installed":
+        return "bg-[var(--energy-green)]/15 text-[var(--energy-green)] border-[var(--energy-green)]/30";
+      default:
+        return "bg-white/10 text-white/70 border-white/10";
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
+      <div className="relative w-full max-w-4xl bg-[#0d0f12] border border-white/10 rounded-3xl shadow-2xl flex flex-col max-h-[94vh] overflow-hidden">
+        {/* Header */}
+        <div className="p-5 border-b border-white/10 bg-[#12151b] flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-[var(--energy-green)]/15 text-[var(--energy-green)] border border-[var(--energy-green)]/30 flex items-center justify-center flex-shrink-0">
+              <PackageCheck className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="font-mono text-xs font-bold text-[var(--energy-green)] px-2.5 py-0.5 rounded bg-[var(--energy-green)]/15 border border-[var(--energy-green)]/30">
+                  {project.id}
+                </span>
+                <span className={`text-xs px-2.5 py-0.5 rounded-full font-bold border ${getStageBadgeColor(project.chainStage || "Warehouse")}`}>
+                  Custody: {project.chainStage || "Warehouse"}
+                </span>
+                <span className="text-xs px-2.5 py-0.5 rounded-full bg-white/5 text-[var(--cng-blue)] font-medium">
+                  {project.type}
+                </span>
+              </div>
+              <h3 className="font-display font-bold text-lg text-[var(--electric)]">
+                {project.name}
+              </h3>
+              <div className="flex items-center gap-3 text-xs text-[var(--muted-foreground)] mt-0.5">
+                <span>Facility: <strong className="text-white">{project.customer || "SmartFix Client"}</strong></span>
+                <span>·</span>
+                <span>Location: <strong className="text-white">{project.location}</strong></span>
+                <span>·</span>
+                <span>Lead: <strong className="text-[var(--energy-green)]">{project.projectManager}</strong></span>
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="w-9 h-9 rounded-full glass-panel flex items-center justify-center text-[var(--muted-foreground)] hover:text-white transition-colors cursor-pointer"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto p-5 space-y-6">
+          {/* 4-Stage Custody Stepper */}
+          <div className="p-5 rounded-2xl glass-card border border-white/10 space-y-3.5">
+            <div className="flex items-center justify-between border-b border-white/5 pb-2.5">
+              <div>
+                <span className="text-[10px] font-mono uppercase tracking-wider text-[var(--energy-green)] font-bold block">
+                  Material Custody Pipeline
+                </span>
+                <div className="font-bold text-sm text-[var(--electric)]">
+                  Warehouse → Vehicle → Site → Installed
+                </div>
+              </div>
+              {currentStageIdx < STAGES.length - 1 ? (
+                <button
+                  type="button"
+                  onClick={handleAdvanceStage}
+                  className="px-3.5 py-1.5 rounded-xl bg-[var(--energy-green)] text-[var(--obsidian)] font-bold text-xs flex items-center gap-1.5 hover:opacity-90 shadow-md cursor-pointer"
+                >
+                  <span>Advance Stage</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              ) : (
+                <span className="px-2.5 py-1 rounded-xl bg-[var(--energy-green)]/15 text-[var(--energy-green)] text-xs font-bold border border-[var(--energy-green)]/30">
+                  Fully Installed &amp; Commissioned ✓
+                </span>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-2.5">
+              {STAGES.map((s, idx) => {
+                const Icon = s.icon;
+                const isPassed = idx < currentStageIdx;
+                const isCurrent = idx === currentStageIdx;
+
+                return (
+                  <div
+                    key={s.stage}
+                    className={`p-3 rounded-xl border text-xs transition-all ${
+                      isCurrent
+                        ? "bg-[var(--energy-green)]/15 border-[var(--energy-green)] text-white shadow-sm"
+                        : isPassed
+                        ? "bg-white/[0.03] border-[var(--energy-green)]/30 text-white"
+                        : "bg-white/[0.01] border-white/5 text-[var(--muted-foreground)] opacity-50"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-1.5">
+                      <div
+                        className={`w-7 h-7 rounded-lg flex items-center justify-center ${
+                          isCurrent
+                            ? "bg-[var(--energy-green)] text-[var(--obsidian)] font-bold"
+                            : isPassed
+                            ? "bg-[var(--energy-green)]/20 text-[var(--energy-green)]"
+                            : "bg-white/5 text-[var(--muted-foreground)]"
+                        }`}
+                      >
+                        {isPassed ? <Check className="w-3.5 h-3.5 stroke-[3]" /> : <Icon className="w-3.5 h-3.5" />}
+                      </div>
+                      <span className="text-[10px] font-mono font-bold">Step 0{idx + 1}</span>
+                    </div>
+                    <div className="font-bold text-xs text-[var(--electric)]">{s.label}</div>
+                    <p className="text-[10px] text-[var(--muted-foreground)] mt-0.5">{s.desc}</p>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="p-2.5 rounded-xl bg-white/[0.02] border border-white/5 flex items-center justify-between text-xs">
+              <span className="text-[var(--muted-foreground)]">
+                Readiness State: <strong className="text-white">{project.materialsStatus}</strong>
+              </span>
+              <span className="text-[var(--energy-green)] font-mono text-[11px] font-semibold">
+                Custody Chain Verified
+              </span>
+            </div>
+          </div>
+
+          {/* BOM Material Items Table */}
+          <div className="space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <h4 className="font-display font-bold text-base text-[var(--electric)]">
+                  Allocated BOM Materials
+                </h4>
+                <span className="px-2 py-0.5 rounded-full bg-[var(--energy-green)]/15 text-[var(--energy-green)] font-mono text-xs font-bold border border-[var(--energy-green)]/30">
+                  12/12 Allocated · 0 Variance
+                </span>
+              </div>
+
+              {/* Filter Pills */}
+              <div className="flex items-center gap-1.5 text-xs">
+                {["All", "Warehouse", "Vehicle", "Site", "Installed"].map((filterName) => (
+                  <button
+                    key={filterName}
+                    type="button"
+                    onClick={() => setActiveStageFilter(filterName)}
+                    className={`px-2.5 py-1 rounded-lg font-medium transition-all cursor-pointer ${
+                      activeStageFilter === filterName
+                        ? "bg-white/20 text-white font-bold"
+                        : "bg-white/5 text-[var(--muted-foreground)] hover:text-white"
+                    }`}
+                  >
+                    {filterName}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Search */}
+            <div className="relative">
+              <Search className="w-3.5 h-3.5 text-[var(--muted-foreground)] absolute left-3 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                placeholder="Search SKU, serial number, or item description..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-9 pr-3 py-1.5 text-xs rounded-xl bg-white/[0.03] border border-white/10 text-[var(--electric)] placeholder:text-[var(--muted-foreground)] focus:outline-none focus:border-[var(--energy-green)]"
+              />
+            </div>
+
+            {/* List */}
+            <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
+              {filteredBom.map((item) => (
+                <div
+                  key={item.id}
+                  className="p-3 rounded-xl glass-card border border-white/5 hover:border-white/20 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs"
+                >
+                  <div className="space-y-1 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-mono text-[10px] font-bold text-[var(--cng-blue)] px-2 py-0.5 rounded bg-[var(--cng-blue)]/10 border border-[var(--cng-blue)]/20">
+                        {item.sku}
+                      </span>
+                      <span className="font-semibold text-white text-xs">{item.name}</span>
+                      <span className="px-1.5 py-0.5 rounded bg-white/5 text-white/70 font-mono text-[10px]">
+                        Qty: {item.qty} {item.unit}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3 text-[10px] text-[var(--muted-foreground)]">
+                      <span className="font-mono text-white/70">SN: {item.serialNumber || "N/A"}</span>
+                      <span>·</span>
+                      <span>Handler: <strong className="text-white/80">{item.handler}</strong></span>
+                      <span>·</span>
+                      <span>{item.allocatedDate}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <select
+                      value={item.chainStage}
+                      onChange={(e) => handleItemStageChange(item.id, e.target.value as ChainStage)}
+                      className={`text-xs px-2 py-1 rounded-lg border focus:outline-none cursor-pointer font-bold ${getStageBadgeColor(
+                        item.chainStage
+                      )}`}
+                    >
+                      <option value="Warehouse" className="bg-[#14161b] text-amber-400">Warehouse</option>
+                      <option value="Vehicle" className="bg-[#14161b] text-[var(--cng-blue)]">Vehicle</option>
+                      <option value="Site" className="bg-[#14161b] text-purple-400">Site</option>
+                      <option value="Installed" className="bg-[#14161b] text-[var(--energy-green)]">Installed</option>
+                    </select>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Field Lead & Actions */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+            <div className="p-3.5 rounded-xl glass-card border border-white/10 flex items-center justify-between">
+              <div>
+                <span className="text-[10px] uppercase font-mono text-[var(--muted-foreground)] block">
+                  Field Project Manager
+                </span>
+                <div className="font-bold text-sm text-[var(--electric)]">{project.projectManager}</div>
+                <div className="text-[11px] text-[var(--muted-foreground)]">Direct: 0813 978 4331</div>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <a
+                  href={`https://wa.me/234${cleanPhone}?text=${encodeURIComponent(
+                    `Hello ${project.projectManager}, following up from SmartFix Admin regarding Project Pack ${project.id}.`
+                  )}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="w-8 h-8 rounded-lg bg-[#25D366]/15 text-[#25D366] hover:bg-[#25D366]/30 flex items-center justify-center transition-colors"
+                  title="WhatsApp"
+                >
+                  <MessageSquare className="w-4 h-4" />
+                </a>
+                <a
+                  href={`tel:${project.phone || "08139784331"}`}
+                  className="w-8 h-8 rounded-lg bg-[var(--cng-blue)]/15 text-[var(--cng-blue)] hover:bg-[var(--cng-blue)]/30 flex items-center justify-center transition-colors"
+                  title="Call"
+                >
+                  <Phone className="w-4 h-4" />
+                </a>
+              </div>
+            </div>
+
+            <div className="p-3.5 rounded-xl glass-card border border-white/10 flex items-center justify-between">
+              <div>
+                <span className="text-[10px] uppercase font-mono text-[var(--muted-foreground)] block">
+                  Custody Transfer Sign-off
+                </span>
+                <div className="font-bold text-sm text-[var(--electric)] flex items-center gap-1.5">
+                  <ShieldCheck className="w-4 h-4 text-[var(--energy-green)]" />
+                  {signedHandover ? "Signed & Validated" : "Ready for Authorization"}
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                {!signedHandover ? (
+                  <button
+                    type="button"
+                    onClick={handleCustodySignOff}
+                    className="px-3 py-1.5 rounded-xl bg-[var(--energy-green)] text-[var(--obsidian)] text-xs font-bold hover:opacity-90 cursor-pointer"
+                  >
+                    Sign Handover
+                  </button>
+                ) : (
+                  <span className="px-2 py-0.5 rounded-lg bg-[var(--energy-green)]/15 text-[var(--energy-green)] text-xs font-bold">
+                    Signed ✓
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={() => toast.success(`Exporting BOM manifest for ${project.id}...`)}
+                  className="w-8 h-8 rounded-lg glass-panel text-[var(--electric)] hover:text-[var(--energy-green)] flex items-center justify-center transition-colors"
+                  title="Download Manifest"
+                >
+                  <FileText className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="p-4 border-t border-white/10 bg-[#12151b] flex items-center justify-between">
+          <div className="text-xs text-[var(--muted-foreground)]">
+            Contract Value: <strong className="text-white font-mono">{formatNaira(project.cost || 12000000)}</strong>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-4 py-2 rounded-xl bg-[var(--energy-green)] text-[var(--obsidian)] font-bold text-xs hover:opacity-90 cursor-pointer"
+          >
+            Close Inspector
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
 /*  KPI card                                                           */
 /* ------------------------------------------------------------------ */
 
@@ -690,111 +1075,120 @@ export default function Admin({ onSignOut }: { onSignOut?: () => void }) {
     return LEAD_STATUSES.map((s) => ({ name: s, value: counts[s] }));
   }, [leads]);
 
+  /* ---- Project Packs & Material Readiness states ---- */
+  const [portalProjectsState, setPortalProjectsState] = useState<PortalProject[]>(() => portalStorage.getProjects());
+  const [selectedPackModal, setSelectedPackModal] = useState<PortalProject | null>(null);
+  const [packModalOpen, setPackModalOpen] = useState(false);
+
   const liveProjects = useMemo(() => {
-    if (!leads || leads.length === 0) {
-      return [
-        {
-          id: "SFE-GEN-LAG-00231",
-          customer: "ABC Manufacturing (Ikeja)",
-          phone: "0803 123 4567",
-          email: "operations@abcmanufacturing.ng",
-          location: "Ikeja, Lagos",
-          equipment: "3 × 500 kVA Perkins Diesel (CNG Dual-Fuel)",
-          status: "Engineering Review",
-          leadStatus: "Hot" as LeadStatus,
-          materials: "12/12 Allocated (0 Variance)",
-          lead: "Engr. Tunde A. (Power)",
-          rawLeadId: null as string | null,
-        },
-        {
-          id: "SFE-FLT-VIC-00109",
-          customer: "TransCorp Logistics (VI)",
-          phone: "0802 987 6543",
-          email: "fleet@transcorplogistics.ng",
-          location: "Victoria Island, Lagos",
-          equipment: "25 × Toyota HiAce Petrol (CNG Conversion)",
-          status: "Site Readiness Pack",
-          leadStatus: "Qualified" as LeadStatus,
-          materials: "25/25 Tanks Staged",
-          lead: "Engr. Michael O. (Mobility)",
-          rawLeadId: null as string | null,
-        },
-        {
-          id: "SFE-HYB-LEK-00045",
-          customer: "Grandview Estates (Lekki)",
-          phone: "0814 555 7890",
-          email: "facility@grandviewestates.ng",
-          location: "Lekki Phase 1, Lagos",
-          equipment: "Solar PV + 100kVA CNG Microgrid",
-          status: "Site Assessment",
-          leadStatus: "Qualified" as LeadStatus,
-          materials: "In Transit to Site",
-          lead: "Engr. Sarah D. (Procurement)",
-          rawLeadId: null as string | null,
-        },
-      ];
+    const list: (PortalProject & { rawLeadId?: string | null; leadStatus?: LeadStatus; equipment?: string; lead?: string; materials?: string })[] = [];
+
+    // Populate official project packs (including SFE-FUL-9538, SFE-FUL-5346, SFE-FUL-9435, SFE-FUL-6078)
+    portalProjectsState.forEach((pp) => {
+      list.push({
+        ...pp,
+        equipment: pp.name,
+        lead: pp.projectManager,
+        materials: pp.materialsStatus || "12/12 Allocated (0 Variance)",
+        rawLeadId: null,
+        leadStatus: "Hot" as LeadStatus,
+      });
+    });
+
+    // Also include any leads from Supabase that aren't already represented
+    if (leads && leads.length > 0) {
+      leads.forEach((l, index) => {
+        const serviceStr = typeof l?.service === "string" ? l.service : "";
+        const match = serviceStr.match(/\[([A-Z0-9-]+)\]/);
+        const leadIdStr = l?.id ? String(l.id).slice(0, 4).toUpperCase() : String(index + 1);
+
+        const id = match
+          ? match[1]
+          : `SFE-${
+              serviceStr.toUpperCase().includes("GENERATOR")
+                ? "GEN"
+                : serviceStr.toUpperCase().includes("FUEL")
+                ? "FUL"
+                : serviceStr.toUpperCase().includes("CNG") || serviceStr.toUpperCase().includes("VEHICLE")
+                ? "VEH"
+                : "PRJ"
+            }-${leadIdStr}`;
+
+        if (!list.some((existing) => existing.id === id)) {
+          const cleanService = (serviceStr.replace(/\[[A-Z0-9-]+\]\s*/, "") || "Energy Solution Requirement").trim();
+          let status: any = "ENGINEERING";
+          let chainStage: ChainStage = "Warehouse";
+          let materials = "12/12 Allocated · Staged & QC Inspected at SmartFix Depot";
+
+          if (l?.status === "Hot") {
+            status = "ENGINEERING";
+            chainStage = "Warehouse";
+            materials = "12/12 Allocated · Staged & QC Inspected at SmartFix Depot";
+          } else if (l?.status === "Qualified") {
+            status = "SITE PREPARATION";
+            chainStage = "Site";
+            materials = "12/12 Allocated · Delivered to Site";
+          } else {
+            status = "REQUEST RECEIVED";
+            chainStage = "Warehouse";
+            materials = "12/12 Allocated · Staging in Depot";
+          }
+
+          let leadEngineer = "Engr. Tunde A. (Power)";
+          const svc = serviceStr.toLowerCase();
+          if (svc.includes("fuel") || svc.includes("diesel")) {
+            leadEngineer = "Engr. Sarah D. (Fuel Logistics)";
+          } else if (
+            svc.includes("vehicle") ||
+            svc.includes("cng") ||
+            svc.includes("fleet") ||
+            svc.includes("toyota") ||
+            svc.includes("honda")
+          ) {
+            leadEngineer = "Capt. Ibrahim (Fleet Dispatch)";
+          }
+
+          list.push({
+            id,
+            name: cleanService,
+            customer: `${l?.name || "Customer"}${l?.company ? ` (${l.company})` : ""}`,
+            phone: l?.phone || "",
+            email: l?.email || "",
+            type: svc.includes("fuel")
+              ? "Bulk Fuel Supply"
+              : svc.includes("generator")
+              ? "Generator Conversion"
+              : svc.includes("solar")
+              ? "Solar & Battery"
+              : "CNG Vehicle Conversion",
+            location: l?.location || "Lagos, Nigeria",
+            siteId: "SITE-01",
+            startDate: new Date().toISOString().split("T")[0],
+            expectedCompletion: "In Engineering Review",
+            stage: status,
+            progressPercent: 45,
+            chainStage,
+            assignedTeam: [leadEngineer],
+            projectManager: leadEngineer,
+            materialsStatus: materials,
+            materials,
+            equipment: cleanService,
+            lead: leadEngineer,
+            bomCount: { allocated: 12, total: 12 },
+            bomItems: createStandardBomItems(id, chainStage),
+            cost: 12000000,
+            paidAmount: 6000000,
+            documents: [],
+            milestones: [],
+            rawLeadId: l?.id || null,
+            leadStatus: l?.status || "Hot",
+          });
+        }
+      });
     }
 
-    return leads.map((l, index) => {
-      const serviceStr = typeof l?.service === "string" ? l.service : "";
-      const match = serviceStr.match(/\[([A-Z0-9-]+)\]/);
-      const leadIdStr = l?.id ? String(l.id).slice(0, 4).toUpperCase() : String(index + 1);
-
-      const id = match
-        ? match[1]
-        : `SFE-${
-            serviceStr.toUpperCase().includes("GENERATOR")
-              ? "GEN"
-              : serviceStr.toUpperCase().includes("FUEL")
-              ? "FUL"
-              : serviceStr.toUpperCase().includes("CNG") || serviceStr.toUpperCase().includes("VEHICLE")
-              ? "VEH"
-              : "PRJ"
-          }-${leadIdStr}`;
-      const cleanService = (serviceStr.replace(/\[[A-Z0-9-]+\]\s*/, "") || "Energy Solution Requirement").trim();
-
-      let status = "Intake Received";
-      let materials = "Requirements Scoping";
-      if (l?.status === "Hot") {
-        status = "Engineering Review";
-        materials = "BOM Staging (12/12 Allocated)";
-      } else if (l?.status === "Qualified") {
-        status = "Site Readiness Pack";
-        materials = "Pre-Packaged / Verified";
-      } else {
-        status = "Initial Discovery";
-        materials = "Pending Sizing Confirmation";
-      }
-
-      let leadEngineer = "Engr. Tunde A. (Power)";
-      const svc = serviceStr.toLowerCase();
-      if (svc.includes("fuel") || svc.includes("diesel")) {
-        leadEngineer = "Engr. Sarah D. (Procurement)";
-      } else if (
-        svc.includes("vehicle") ||
-        svc.includes("cng") ||
-        svc.includes("fleet") ||
-        svc.includes("toyota") ||
-        svc.includes("honda")
-      ) {
-        leadEngineer = "Engr. Michael O. (Mobility)";
-      }
-
-      return {
-        id,
-        customer: `${l?.name || "Customer"}${l?.company ? ` (${l.company})` : ""}`,
-        phone: l?.phone || "",
-        email: l?.email || "",
-        location: l?.location || "Lagos, Nigeria",
-        equipment: cleanService,
-        status,
-        leadStatus: l?.status || "Hot",
-        materials,
-        lead: leadEngineer,
-        rawLeadId: l?.id || null,
-      };
-    });
-  }, [leads]);
+    return list;
+  }, [portalProjectsState, leads]);
 
   const openNew = () => { setEditing(null); setModalOpen(true); };
   const openEdit = (p: Product) => { setEditing(p); setModalOpen(true); };
@@ -1262,6 +1656,7 @@ export default function Admin({ onSignOut }: { onSignOut?: () => void }) {
                       <th className="px-4 py-3 font-medium">Contact &amp; Location</th>
                       <th className="px-4 py-3 font-medium">Equipment / Scope</th>
                       <th className="px-4 py-3 font-medium">Workflow Stage</th>
+                      <th className="px-4 py-3 font-medium">Custody Chain</th>
                       <th className="px-4 py-3 font-medium">BOM Materials</th>
                       <th className="px-4 py-3 font-medium">Field Lead</th>
                       <th className="px-4 py-3 font-medium text-right">Actions</th>
@@ -1273,9 +1668,17 @@ export default function Admin({ onSignOut }: { onSignOut?: () => void }) {
                       return (
                         <tr key={`${p.id}-${index}`} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
                           <td className="px-4 py-3 whitespace-nowrap">
-                            <span className="font-mono font-semibold text-[var(--energy-green)] px-2.5 py-1 rounded-md bg-[var(--energy-green)]/10 border border-[var(--energy-green)]/20 text-xs">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedPackModal(p as any);
+                                setPackModalOpen(true);
+                              }}
+                              className="font-mono font-semibold text-[var(--energy-green)] px-2.5 py-1 rounded-md bg-[var(--energy-green)]/10 border border-[var(--energy-green)]/20 text-xs hover:bg-[var(--energy-green)]/20 cursor-pointer"
+                              title="Inspect Project Pack"
+                            >
                               {p.id}
-                            </span>
+                            </button>
                           </td>
                           <td className="px-4 py-3 whitespace-nowrap">
                             <div className="text-[var(--electric)] font-medium">{p.customer}</div>
@@ -1326,19 +1729,61 @@ export default function Admin({ onSignOut }: { onSignOut?: () => void }) {
                               </select>
                             ) : (
                               <span className="text-xs px-2.5 py-1 rounded-full bg-[var(--cng-blue)]/15 text-[var(--cng-blue)] font-medium">
-                                {p.status}
+                                {p.stage}
                               </span>
                             )}
                           </td>
+                          <td className="px-4 py-3 whitespace-nowrap">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedPackModal(p as any);
+                                setPackModalOpen(true);
+                              }}
+                              className={`text-xs px-2.5 py-1 rounded-full font-bold border inline-flex items-center gap-1.5 cursor-pointer hover:opacity-90 ${
+                                p.chainStage === "Warehouse"
+                                  ? "bg-amber-500/15 text-amber-400 border-amber-500/30"
+                                  : p.chainStage === "Vehicle"
+                                  ? "bg-[var(--cng-blue)]/15 text-[var(--cng-blue)] border-[var(--cng-blue)]/30"
+                                  : p.chainStage === "Site"
+                                  ? "bg-purple-500/15 text-purple-400 border-purple-500/30"
+                                  : "bg-[var(--energy-green)]/15 text-[var(--energy-green)] border-[var(--energy-green)]/30"
+                              }`}
+                              title="Click to inspect 4-stage custody pipeline"
+                            >
+                              <span className="w-1.5 h-1.5 rounded-full bg-current" />
+                              <span>{p.chainStage || "Warehouse"}</span>
+                            </button>
+                          </td>
                           <td className="px-4 py-3 text-xs text-[var(--electric)] whitespace-nowrap">
-                            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-white/5 text-[11px]">
-                              <PackageCheck className="w-3.5 h-3.5 text-[var(--energy-green)]" />
-                              {p.materials}
-                            </span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedPackModal(p as any);
+                                setPackModalOpen(true);
+                              }}
+                              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[var(--energy-green)]/10 text-[var(--energy-green)] hover:bg-[var(--energy-green)]/20 border border-[var(--energy-green)]/30 transition-colors cursor-pointer"
+                              title="Inspect 12/12 Allocated BOM Items"
+                            >
+                              <PackageCheck className="w-3.5 h-3.5" />
+                              <span className="font-bold">12/12 Allocated · Inspect</span>
+                            </button>
                           </td>
                           <td className="px-4 py-3 text-xs text-[var(--muted-foreground)] whitespace-nowrap">{p.lead}</td>
                           <td className="px-4 py-3 text-right whitespace-nowrap">
                             <div className="flex items-center justify-end gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setSelectedPackModal(p as any);
+                                  setPackModalOpen(true);
+                                }}
+                                className="press-scale w-8 h-8 rounded-lg glass-panel text-[var(--energy-green)] hover:bg-[var(--energy-green)]/20 inline-flex items-center justify-center transition-colors cursor-pointer"
+                                title="Inspect Material Pack & 12/12 BOM"
+                                aria-label="Inspect Material Pack"
+                              >
+                                <PackageCheck className="w-4 h-4" />
+                              </button>
                               {cleanPhone && (
                                 <a
                                   href={`https://wa.me/234${cleanPhone}?text=${encodeURIComponent(
@@ -2934,6 +3379,15 @@ export default function Admin({ onSignOut }: { onSignOut?: () => void }) {
         target={bumpTarget}
         onClose={() => setBumpModalOpen(false)}
         onBumped={refreshKnowledge}
+      />
+      <AdminProjectPackModal
+        open={packModalOpen}
+        project={selectedPackModal}
+        onClose={() => setPackModalOpen(false)}
+        onProjectUpdated={(up) => {
+          setPortalProjectsState(portalStorage.getProjects());
+          setSelectedPackModal(up);
+        }}
       />
     </div>
   );

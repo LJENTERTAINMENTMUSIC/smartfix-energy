@@ -4,6 +4,7 @@ import {
   LayoutDashboard,
   FolderGit2,
   Package,
+  PackageCheck,
   Fuel,
   Wrench,
   CreditCard,
@@ -70,6 +71,7 @@ import VoiceWorkOrderRecorder from "@/components/portal/VoiceWorkOrderRecorder";
 import WhatsAppConciergeModal from "@/components/common/WhatsAppConciergeModal";
 import ResidentVendingSimulator from "@/components/ipp/ResidentVendingSimulator";
 import EstateSCADAPreview from "@/components/ipp/EstateSCADAPreview";
+import ProjectPackModal from "@/components/portal/ProjectPackModal";
 import { Radio, MessageSquare as MessageSquareIcon } from "lucide-react";
 
 type PortalTab =
@@ -112,6 +114,8 @@ export default function CustomerPortal() {
   const [showChatModal, setShowChatModal] = useState(false);
   const [showNotifMenu, setShowNotifMenu] = useState(false);
   const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
+  const [showProjectPackModal, setShowProjectPackModal] = useState(false);
+  const [selectedProjectPack, setSelectedProjectPack] = useState<PortalProject | null>(null);
 
   // Search & Filter filters
   const [assetFilter, setAssetFilter] = useState<string>("All");
@@ -725,7 +729,18 @@ export default function CustomerPortal() {
 
                       <div className="flex flex-wrap items-center justify-between text-xs text-[var(--muted-foreground)] border-t border-white/5 pt-3 gap-2">
                         <span>Materials: <strong className="text-white">{p.materialsStatus}</strong></span>
-                        <span>Manager: <strong className="text-white">{p.projectManager}</strong></span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedProjectPack(p);
+                            setShowProjectPackModal(true);
+                          }}
+                          className="text-[var(--energy-green)] hover:underline font-bold inline-flex items-center gap-1 cursor-pointer"
+                        >
+                          <PackageCheck className="w-3.5 h-3.5" />
+                          <span>Inspect Material Pack (12/12 BOM)</span>
+                          <ChevronRight className="w-3.5 h-3.5" />
+                        </button>
                       </div>
                     </div>
                   ))}
@@ -869,6 +884,17 @@ export default function CustomerPortal() {
                             Started {p.startDate} · Target {p.expectedCompletion}
                           </span>
                         </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedProjectPack(p);
+                            setShowProjectPackModal(true);
+                          }}
+                          className="px-3.5 py-2 rounded-xl bg-[var(--energy-green)] text-[var(--obsidian)] font-bold text-xs flex items-center gap-1.5 hover:opacity-95 shadow-md cursor-pointer"
+                        >
+                          <PackageCheck className="w-4 h-4" />
+                          <span>Inspect Material Pack (12/12 BOM)</span>
+                        </button>
                       </div>
                     </div>
 
@@ -883,6 +909,74 @@ export default function CustomerPortal() {
                         <p><strong>SmartFix Action:</strong> {p.delayNotice.smartfixAction}</p>
                       </div>
                     )}
+
+                    {/* 4-Stage Material Readiness & Custody Chain (Warehouse → Vehicle → Site → Installed) */}
+                    <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 space-y-2.5">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-mono uppercase tracking-wider text-[var(--energy-green)] font-bold">
+                            Material Custody Chain:
+                          </span>
+                          <span className="text-xs text-[var(--muted-foreground)]">
+                            Chain: Warehouse → Vehicle → Site → Installed
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedProjectPack(p);
+                            setShowProjectPackModal(true);
+                          }}
+                          className="text-xs text-[var(--energy-green)] font-bold hover:underline inline-flex items-center gap-1 cursor-pointer"
+                        >
+                          <span>12/12 Allocated · View Pack</span>
+                          <ChevronRight className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                        {[
+                          { stage: "Warehouse", label: "01. Warehouse", desc: "QC Staged & Tagged" },
+                          { stage: "Vehicle", label: "02. Vehicle", desc: "Transit Fleet En Route" },
+                          { stage: "Site", label: "03. Site", desc: "Delivered to Facility" },
+                          { stage: "Installed", label: "04. Installed", desc: "Mounted & Operating" },
+                        ].map((st, i) => {
+                          const order = ["Warehouse", "Vehicle", "Site", "Installed"];
+                          const currentIdx = order.indexOf(p.chainStage || "Warehouse");
+                          const isPassed = i < currentIdx;
+                          const isCurrent = i === currentIdx;
+
+                          return (
+                            <div
+                              key={st.stage}
+                              className={`p-2.5 rounded-xl border flex items-center gap-2.5 ${
+                                isCurrent
+                                  ? "bg-[var(--energy-green)]/15 border-[var(--energy-green)] text-white shadow-sm"
+                                  : isPassed
+                                  ? "bg-white/[0.03] border-[var(--energy-green)]/30 text-white"
+                                  : "bg-white/[0.01] border-white/5 text-[var(--muted-foreground)] opacity-50"
+                              }`}
+                            >
+                              <div
+                                className={`w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-bold ${
+                                  isCurrent
+                                    ? "bg-[var(--energy-green)] text-[var(--obsidian)]"
+                                    : isPassed
+                                    ? "bg-[var(--energy-green)]/20 text-[var(--energy-green)]"
+                                    : "bg-white/5 text-[var(--muted-foreground)]"
+                                }`}
+                              >
+                                {isPassed ? <Check className="w-3 h-3 stroke-[3]" /> : i + 1}
+                              </div>
+                              <div className="truncate">
+                                <div className="font-bold text-[11px] truncate">{st.label}</div>
+                                <div className="text-[9px] text-[var(--muted-foreground)] truncate">{st.desc}</div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
 
                     {/* 12-Stage Visual Lifecycle Progress Pipeline */}
                     <div>
@@ -1925,6 +2019,16 @@ export default function CustomerPortal() {
       <WhatsAppConciergeModal
         isOpen={showWhatsAppModal}
         onClose={() => setShowWhatsAppModal(false)}
+      />
+
+      <ProjectPackModal
+        isOpen={showProjectPackModal}
+        onClose={() => setShowProjectPackModal(false)}
+        project={selectedProjectPack}
+        onProjectUpdated={(updated) => {
+          setProjects(portalStorage.getProjects());
+          setSelectedProjectPack(updated);
+        }}
       />
     </div>
   );

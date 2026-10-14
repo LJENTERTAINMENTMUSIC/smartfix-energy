@@ -20,9 +20,26 @@ export interface CustomerProfile {
   activeSiteId: string;
 }
 
+export type ChainStage = "Warehouse" | "Vehicle" | "Site" | "Installed";
+
+export interface BomMaterialItem {
+  id: string;
+  sku: string;
+  name: string;
+  qty: number;
+  unit: string;
+  chainStage: ChainStage;
+  serialNumber?: string;
+  allocatedDate: string;
+  handler: string;
+}
+
 export interface PortalProject {
   id: string;
   name: string;
+  customer?: string;
+  phone?: string;
+  email?: string;
   type: "Generator Conversion" | "CNG Vehicle Conversion" | "Solar & Battery" | "Bulk Fuel Supply" | "Hybrid Energy";
   location: string;
   siteId: string;
@@ -42,10 +59,12 @@ export interface PortalProject {
     | "SERVICE"
     | "COMPLETED";
   progressPercent: number;
+  chainStage?: ChainStage;
   assignedTeam: string[];
   projectManager: string;
   materialsStatus: string;
   bomCount: { allocated: number; total: number };
+  bomItems?: BomMaterialItem[];
   cost: number;
   paidAmount: number;
   isDelayed?: boolean;
@@ -237,33 +256,269 @@ export const INITIAL_CUSTOMER: CustomerProfile = {
   activeSiteId: "SITE-01",
 };
 
+export function createStandardBomItems(projectId: string, defaultStage: ChainStage = "Warehouse"): BomMaterialItem[] {
+  const shortCode = projectId.replace(/[^A-Za-z0-9]/g, "").slice(-4);
+  const items: Omit<BomMaterialItem, "id" | "serialNumber" | "allocatedDate">[] = [
+    {
+      sku: "SKU-FLW-8821",
+      name: "Positive Displacement Flow Meter (0.1% custody transfer precision, ATEX Zone 1)",
+      qty: 1,
+      unit: "Unit",
+      chainStage: defaultStage,
+      handler: "Lead Logistics Engr. Sarah D.",
+    },
+    {
+      sku: "SKU-NOZ-5012",
+      name: "Ultra-High Flow Heavy-Duty Auto-Shutoff Nozzle (120 L/min, Elaflex / OPW certified)",
+      qty: 2,
+      unit: "Units",
+      chainStage: defaultStage,
+      handler: "Fleet Dispatch Capt. Ibrahim",
+    },
+    {
+      sku: "SKU-HSE-350P",
+      name: "Braided Stainless Anti-Static Fuel Delivery Hose (15m, 350 PSI WP)",
+      qty: 2,
+      unit: "Lengths",
+      chainStage: defaultStage,
+      handler: "Warehouse Custodian K. Alabi",
+    },
+    {
+      sku: "SKU-CPL-0200",
+      name: "Dry-Break Camlock Quick-Disconnect Coupler (2\" BSP, Aluminum Bronze)",
+      qty: 4,
+      unit: "Couplers",
+      chainStage: defaultStage,
+      handler: "Lead Logistics Engr. Sarah D.",
+    },
+    {
+      sku: "SKU-IOT-SCD1",
+      name: "SmartFix SCADA IoT Telemetry Transmitter & Digital Pulse Encoder",
+      qty: 1,
+      unit: "Module",
+      chainStage: defaultStage,
+      handler: "Engr. Tunde A. (Power & SCADA)",
+    },
+    {
+      sku: "SKU-REL-SPRK",
+      name: "Spring-Rewind Heavy-Duty Grounded Hose Reel (15m capacity, spark-proof)",
+      qty: 1,
+      unit: "Reel",
+      chainStage: defaultStage,
+      handler: "Warehouse Custodian K. Alabi",
+    },
+    {
+      sku: "SKU-FLT-0010",
+      name: "Primary Pre-Filtration Water Separator Cartridge (10 Micron, Spin-On)",
+      qty: 4,
+      unit: "Cartridges",
+      chainStage: defaultStage,
+      handler: "Technician B. Lawal",
+    },
+    {
+      sku: "SKU-FLT-0002",
+      name: "Secondary Polishing Coalescing Fuel Filter (2 Micron Particulate Removal)",
+      qty: 4,
+      unit: "Cartridges",
+      chainStage: defaultStage,
+      handler: "Technician B. Lawal",
+    },
+    {
+      sku: "SKU-BRK-SAFE",
+      name: "Emergency Breakaway Safety Coupling (Double Poppet Valve, Auto-Sealing)",
+      qty: 2,
+      unit: "Units",
+      chainStage: defaultStage,
+      handler: "HSE Compliance Lead",
+    },
+    {
+      sku: "SKU-ESD-VALV",
+      name: "Pneumatic Emergency Stop Shutoff Solenoid & Fire-Safe Ball Valve",
+      qty: 1,
+      unit: "Valve Kit",
+      chainStage: defaultStage,
+      handler: "Lead Logistics Engr. Sarah D.",
+    },
+    {
+      sku: "SKU-GND-CLMP",
+      name: "Static Grounding Reel with Magnetic Clamp & Continuous Interlock Cable",
+      qty: 1,
+      unit: "Reel Unit",
+      chainStage: defaultStage,
+      handler: "Safety Officer M. Adeleke",
+    },
+    {
+      sku: "SKU-SEL-HOLO",
+      name: "Tamper-Evident High-Security Holographic Wire Bolt Seals (Serialized Pack of 12)",
+      qty: 12,
+      unit: "Seals",
+      chainStage: defaultStage,
+      handler: "Quality Assurance Lead O. Jimoh",
+    },
+  ];
+
+  return items.map((item, idx) => ({
+    id: `${projectId}-BOM-${String(idx + 1).padStart(2, "0")}`,
+    sku: item.sku,
+    name: item.name,
+    qty: item.qty,
+    unit: item.unit,
+    chainStage: item.chainStage,
+    serialNumber: `SF-${shortCode}-${item.sku.replace("SKU-", "")}-${100 + idx}`,
+    allocatedDate: "2026-10-06 08:30 WAT",
+    handler: item.handler,
+  }));
+}
+
 export const INITIAL_PROJECTS: PortalProject[] = [
   {
-    id: "SFE-FUL-6078",
-    name: "Bulk Diesel Supply & Recurring Procurement Contract",
+    id: "SFE-FUL-9538",
+    name: "Direct Tanker Bulk Fuel Supply & Metered Skid Integration",
+    customer: "LJ Entertainment Records & Facilities",
+    phone: "0813 978 4331",
+    email: "ljentertainmentmusic@gmail.com",
     type: "Bulk Fuel Supply",
     location: "Victoria Island / Oniru, Lagos",
     siteId: "SITE-01",
-    startDate: "2026-10-01",
-    expectedCompletion: "2026-10-31",
-    stage: "ENGINEERING",
-    progressPercent: 65,
+    startDate: "2026-10-04",
+    expectedCompletion: "2026-10-18",
+    stage: "SITE PREPARATION",
+    progressPercent: 75,
+    chainStage: "Site",
     assignedTeam: ["Engr. Sarah D. (Fuel Logistics)", "Capt. Ibrahim (Fleet Dispatch)"],
     projectManager: "Engr. Sarah D.",
-    materialsStatus: "Tanker & Logistics Allocated (10,000 Litres Dedicated Staging)",
+    materialsStatus: "12/12 Allocated · Arrived On-Site at Victoria Island",
     bomCount: { allocated: 12, total: 12 },
-    cost: 12000000,
-    paidAmount: 6000000,
+    bomItems: createStandardBomItems("SFE-FUL-9538", "Site"),
+    cost: 12500000,
+    paidAmount: 12500000,
     milestones: [
-      { step: "REQUEST RECEIVED", status: "completed", date: "Oct 1, 2026" },
-      { step: "ASSESSMENT", status: "completed", date: "Oct 3, 2026" },
-      { step: "ENGINEERING", status: "current", date: "Oct 6, 2026" },
+      { step: "REQUEST RECEIVED", status: "completed", date: "Oct 4, 2026" },
+      { step: "ASSESSMENT", status: "completed", date: "Oct 5, 2026" },
+      { step: "ENGINEERING", status: "completed", date: "Oct 6, 2026" },
+      { step: "APPROVAL", status: "completed", date: "Oct 7, 2026" },
+      { step: "PROCUREMENT", status: "completed", date: "Oct 8, 2026" },
+      { step: "SITE PREPARATION", status: "current", date: "Oct 10, 2026" },
+      { step: "INSTALLATION", status: "pending" },
+      { step: "TESTING", status: "pending" },
+      { step: "COMMISSIONING", status: "pending" },
+      { step: "HANDOVER", status: "pending" },
+      { step: "SERVICE", status: "pending" },
+    ],
+    documents: [
+      { name: "Direct Bulk Tanker Dispatch & Custody Manifest.pdf", size: "1.6 MB", date: "Oct 8, 2026", type: "Manifest" },
+      { name: "NMDPRA Fuel Batch Quality Analysis Certificate.pdf", size: "910 KB", date: "Oct 8, 2026", type: "Certificate" },
+    ],
+  },
+  {
+    id: "SFE-FUL-5346",
+    name: "Automated Fuel Management Skid & High-Flow Nozzle System",
+    customer: "Dangote Terminal Fleet Operations",
+    phone: "0803 441 9920",
+    email: "fleet.ops@dangote-terminal.ng",
+    type: "Bulk Fuel Supply",
+    location: "Apapa Port Complex, Lagos",
+    siteId: "SITE-02",
+    startDate: "2026-10-06",
+    expectedCompletion: "2026-10-24",
+    stage: "PROCUREMENT",
+    progressPercent: 50,
+    chainStage: "Vehicle",
+    assignedTeam: ["Capt. Ibrahim (Fleet Lead)", "Warehouse Custodian K. Alabi"],
+    projectManager: "Capt. Ibrahim",
+    materialsStatus: "12/12 Allocated · Loaded on Transit Tanker LAG-782-KT",
+    bomCount: { allocated: 12, total: 12 },
+    bomItems: createStandardBomItems("SFE-FUL-5346", "Vehicle"),
+    cost: 18200000,
+    paidAmount: 9100000,
+    milestones: [
+      { step: "REQUEST RECEIVED", status: "completed", date: "Oct 6, 2026" },
+      { step: "ASSESSMENT", status: "completed", date: "Oct 7, 2026" },
+      { step: "ENGINEERING", status: "completed", date: "Oct 9, 2026" },
+      { step: "APPROVAL", status: "completed", date: "Oct 10, 2026" },
+      { step: "PROCUREMENT", status: "current", date: "Oct 11, 2026" },
+      { step: "SITE PREPARATION", status: "pending" },
+      { step: "INSTALLATION", status: "pending" },
+      { step: "TESTING", status: "pending" },
+      { step: "COMMISSIONING", status: "pending" },
+      { step: "HANDOVER", status: "pending" },
+      { step: "SERVICE", status: "pending" },
+    ],
+    documents: [
+      { name: "Dangote Terminal Fuel Skid Engineering Schematic.pdf", size: "2.1 MB", date: "Oct 9, 2026", type: "Engineering" },
+      { name: "Transit Custody Waybill & Seal Numbers.pdf", size: "750 KB", date: "Oct 11, 2026", type: "Logistics" },
+    ],
+  },
+  {
+    id: "SFE-FUL-9435",
+    name: "Virtual Pipeline High-Pressure Decanting Station",
+    customer: "Eko Atlantic Marine Terminal",
+    phone: "0809 112 3456",
+    email: "engineering@ekoatlanticmarine.com",
+    type: "Bulk Fuel Supply",
+    location: "Eko Atlantic City, Lagos",
+    siteId: "SITE-03",
+    startDate: "2026-10-08",
+    expectedCompletion: "2026-11-05",
+    stage: "ENGINEERING",
+    progressPercent: 35,
+    chainStage: "Warehouse",
+    assignedTeam: ["Engr. Tunde A. (Power & SCADA)", "Engr. Sarah D."],
+    projectManager: "Engr. Tunde A.",
+    materialsStatus: "12/12 Allocated · Staged & QC Inspected at SmartFix Depot",
+    bomCount: { allocated: 12, total: 12 },
+    bomItems: createStandardBomItems("SFE-FUL-9435", "Warehouse"),
+    cost: 22000000,
+    paidAmount: 11000000,
+    milestones: [
+      { step: "REQUEST RECEIVED", status: "completed", date: "Oct 8, 2026" },
+      { step: "ASSESSMENT", status: "completed", date: "Oct 9, 2026" },
+      { step: "ENGINEERING", status: "current", date: "Oct 11, 2026" },
       { step: "APPROVAL", status: "pending" },
       { step: "PROCUREMENT", status: "pending" },
       { step: "SITE PREPARATION", status: "pending" },
       { step: "INSTALLATION", status: "pending" },
       { step: "TESTING", status: "pending" },
       { step: "COMMISSIONING", status: "pending" },
+      { step: "HANDOVER", status: "pending" },
+      { step: "SERVICE", status: "pending" },
+    ],
+    documents: [
+      { name: "250-Bar Virtual Pipeline Decanting P&ID.pdf", size: "3.4 MB", date: "Oct 10, 2026", type: "Schematic" },
+      { name: "Pressure Relief & Emergency Depressurization Analysis.pdf", size: "1.2 MB", date: "Oct 11, 2026", type: "Safety" },
+    ],
+  },
+  {
+    id: "SFE-FUL-6078",
+    name: "Bulk Diesel Supply & Recurring Procurement Contract",
+    customer: "LJ Entertainment Records & Facilities",
+    phone: "0813 978 4331",
+    email: "ljentertainmentmusic@gmail.com",
+    type: "Bulk Fuel Supply",
+    location: "Victoria Island / Oniru, Lagos",
+    siteId: "SITE-01",
+    startDate: "2026-10-01",
+    expectedCompletion: "2026-10-31",
+    stage: "COMMISSIONING",
+    progressPercent: 95,
+    chainStage: "Installed",
+    assignedTeam: ["Engr. Sarah D. (Fuel Logistics)", "Capt. Ibrahim (Fleet Dispatch)"],
+    projectManager: "Engr. Sarah D.",
+    materialsStatus: "12/12 Allocated · Commissioned & Handed Over",
+    bomCount: { allocated: 12, total: 12 },
+    bomItems: createStandardBomItems("SFE-FUL-6078", "Installed"),
+    cost: 12000000,
+    paidAmount: 12000000,
+    milestones: [
+      { step: "REQUEST RECEIVED", status: "completed", date: "Oct 1, 2026" },
+      { step: "ASSESSMENT", status: "completed", date: "Oct 3, 2026" },
+      { step: "ENGINEERING", status: "completed", date: "Oct 5, 2026" },
+      { step: "APPROVAL", status: "completed", date: "Oct 6, 2026" },
+      { step: "PROCUREMENT", status: "completed", date: "Oct 7, 2026" },
+      { step: "SITE PREPARATION", status: "completed", date: "Oct 8, 2026" },
+      { step: "INSTALLATION", status: "completed", date: "Oct 9, 2026" },
+      { step: "TESTING", status: "completed", date: "Oct 10, 2026" },
+      { step: "COMMISSIONING", status: "current", date: "Oct 12, 2026" },
       { step: "HANDOVER", status: "pending" },
       { step: "SERVICE", status: "pending" },
     ],
@@ -275,6 +530,9 @@ export const INITIAL_PROJECTS: PortalProject[] = [
   {
     id: "SFE-GEN-6A6C",
     name: "Perkins 250 kVA Prime Dual-Fuel Gas Conversion",
+    customer: "LJ Entertainment Records & Facilities",
+    phone: "0813 978 4331",
+    email: "ljentertainmentmusic@gmail.com",
     type: "Generator Conversion",
     location: "Victoria Island Studio, Lagos",
     siteId: "SITE-01",
@@ -282,10 +540,12 @@ export const INITIAL_PROJECTS: PortalProject[] = [
     expectedCompletion: "2026-10-18",
     stage: "PROCUREMENT",
     progressPercent: 48,
+    chainStage: "Warehouse",
     assignedTeam: ["Engr. Tunde A. (Power Lead)", "Engr. David K. (Calibration)"],
     projectManager: "Engr. Tunde A.",
-    materialsStatus: "200-Bar Gas Train, ECU & Zero-Governor Regulators Staged",
-    bomCount: { allocated: 18, total: 18 },
+    materialsStatus: "12/12 Allocated · 200-Bar Gas Train & ECU Staged",
+    bomCount: { allocated: 12, total: 12 },
+    bomItems: createStandardBomItems("SFE-GEN-6A6C", "Warehouse"),
     cost: 8500000,
     paidAmount: 5100000,
     milestones: [
@@ -309,6 +569,9 @@ export const INITIAL_PROJECTS: PortalProject[] = [
   {
     id: "SFE-SOL-LEK-00042",
     name: "50 kWp Commercial Solar PV + 120 kWh LiFePO4 Microgrid",
+    customer: "Ikeja Media & Production Hub",
+    phone: "0813 978 4331",
+    email: "ljentertainmentmusic@gmail.com",
     type: "Solar & Battery",
     location: "Ikeja Media Warehouse Hub",
     siteId: "SITE-02",
@@ -316,10 +579,12 @@ export const INITIAL_PROJECTS: PortalProject[] = [
     expectedCompletion: "2026-09-30",
     stage: "SERVICE",
     progressPercent: 100,
+    chainStage: "Installed",
     assignedTeam: ["Engr. Michael O. (Renewables)", "Engr. Frank E."],
     projectManager: "Engr. Michael O.",
-    materialsStatus: "Fully Commissioned · Grid-Tied & Islanded Backup Operating",
-    bomCount: { allocated: 34, total: 34 },
+    materialsStatus: "12/12 Allocated · Commissioned & Handed Over",
+    bomCount: { allocated: 12, total: 12 },
+    bomItems: createStandardBomItems("SFE-SOL-LEK-00042", "Installed"),
     cost: 28500000,
     paidAmount: 28500000,
     milestones: [
@@ -672,7 +937,32 @@ export const portalStorage = {
   getProjects(): PortalProject[] {
     try {
       const data = localStorage.getItem(STORAGE_KEYS.projects);
-      let localProjects = data ? JSON.parse(data) : INITIAL_PROJECTS;
+      let localProjects: PortalProject[] = data ? JSON.parse(data) : [...INITIAL_PROJECTS];
+
+      // Ensure all INITIAL_PROJECTS exist in localProjects (hydrating any newly added ones or updating BOM items)
+      INITIAL_PROJECTS.forEach((initP) => {
+        const existingIdx = localProjects.findIndex((p) => p.id === initP.id);
+        if (existingIdx === -1) {
+          localProjects.push(initP);
+        } else {
+          // Hydrate missing fields like bomItems, chainStage, customer, phone, email
+          if (!localProjects[existingIdx].bomItems || localProjects[existingIdx].bomItems?.length === 0) {
+            localProjects[existingIdx].bomItems = initP.bomItems;
+          }
+          if (!localProjects[existingIdx].chainStage) {
+            localProjects[existingIdx].chainStage = initP.chainStage;
+          }
+          if (!localProjects[existingIdx].customer) {
+            localProjects[existingIdx].customer = initP.customer;
+          }
+          if (!localProjects[existingIdx].phone) {
+            localProjects[existingIdx].phone = initP.phone;
+          }
+          if (!localProjects[existingIdx].email) {
+            localProjects[existingIdx].email = initP.email;
+          }
+        }
+      });
 
       // Merge any projects created via wizard in local storage
       const wizardProjects = JSON.parse(localStorage.getItem("smartfix_projects") || "[]");
@@ -681,6 +971,9 @@ export const portalStorage = {
           localProjects.unshift({
             id: wp.id,
             name: wp.equipment || wp.objective || "Custom Energy Project",
+            customer: "Olalekan Jimoh",
+            phone: "0813 978 4331",
+            email: "ljentertainmentmusic@gmail.com",
             type: wp.id.includes("GEN")
               ? "Generator Conversion"
               : wp.id.includes("FUL")
@@ -694,10 +987,12 @@ export const portalStorage = {
             expectedCompletion: "In Engineering Review",
             stage: "ENGINEERING",
             progressPercent: 35,
+            chainStage: "Warehouse",
             assignedTeam: ["SmartFix Technical Operations Grid"],
             projectManager: "Engr. Tunde A.",
-            materialsStatus: wp.materialsStatus || "BOM Staging in Progress",
+            materialsStatus: wp.materialsStatus || "12/12 Allocated · Staged & QC Inspected at SmartFix Depot",
             bomCount: { allocated: 12, total: 12 },
+            bomItems: createStandardBomItems(wp.id, "Warehouse"),
             cost: wp.id.includes("FUL") ? 12000000 : 8500000,
             paidAmount: 0,
             milestones: [
@@ -725,6 +1020,46 @@ export const portalStorage = {
   },
   saveProjects(projects: PortalProject[]) {
     localStorage.setItem(STORAGE_KEYS.projects, JSON.stringify(projects));
+  },
+  updateProjectChainStage(projectId: string, newStage: ChainStage): PortalProject | null {
+    const list = this.getProjects();
+    const idx = list.findIndex((p) => p.id === projectId);
+    if (idx === -1) return null;
+    list[idx].chainStage = newStage;
+    if (list[idx].bomItems) {
+      list[idx].bomItems = list[idx].bomItems!.map((b) => ({ ...b, chainStage: newStage }));
+    }
+    const stageStatusMap: Record<ChainStage, string> = {
+      Warehouse: "12/12 Allocated · Staged & QC Inspected at SmartFix Depot",
+      Vehicle: "12/12 Allocated · Loaded & Sealed on Transit Tanker/Fleet",
+      Site: "12/12 Allocated · Delivered & Accepted on Client Facility Site",
+      Installed: "12/12 Allocated · Mounted, Connected & Commissioned",
+    };
+    list[idx].materialsStatus = stageStatusMap[newStage] || list[idx].materialsStatus;
+    this.saveProjects(list);
+    return list[idx];
+  },
+  updateBomItemStage(projectId: string, bomId: string, newStage: ChainStage): PortalProject | null {
+    const list = this.getProjects();
+    const idx = list.findIndex((p) => p.id === projectId);
+    if (idx === -1) return null;
+    if (list[idx].bomItems) {
+      list[idx].bomItems = list[idx].bomItems!.map((b) => (b.id === bomId ? { ...b, chainStage: newStage } : b));
+    }
+    this.saveProjects(list);
+    return list[idx];
+  },
+  advanceProjectChainStage(projectId: string): PortalProject | null {
+    const stageOrder: ChainStage[] = ["Warehouse", "Vehicle", "Site", "Installed"];
+    const list = this.getProjects();
+    const p = list.find((item) => item.id === projectId);
+    if (!p) return null;
+    const currentIdx = stageOrder.indexOf(p.chainStage || "Warehouse");
+    if (currentIdx < stageOrder.length - 1) {
+      const nextStage = stageOrder[currentIdx + 1];
+      return this.updateProjectChainStage(projectId, nextStage);
+    }
+    return p;
   },
 
   getOrders(): PortalOrder[] {
